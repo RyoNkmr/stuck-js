@@ -1,0 +1,15 @@
+{
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": {
+        "browsers": ["last 2 versions"]
+      }
+    }]
+  ],
+  "plugins": [
+    "transform-flow-comments",
+    "@babel/plugin-syntax-flow",
+    "transform-flow-strip-types",
+    "@babel/plugin-proposal-object-rest-spread"
+  ]
+}
