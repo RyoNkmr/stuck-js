@@ -1,0 +1,263 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #efeffe;
+}
+
+p, ul, h1, h2, h3 {
+  margin: 0;
+}
+
+h1:nth-child(n+2),
+h2:nth-child(n+2),
+h3:nth-child(n+2),
+section:nth-child(n+2) {
+  margin-top: 48px;
+}
+
+a {
+  transition: background-color 150ms, opacity 150ms;
+  text-decoration: none;
+}
+
+  a:hover {
+    opacity: .7;
+    background-color: #017;
+  }
+
+
+.contents {
+  width: 1140px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* header */
+.header {
+  min-width: 1140px;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.2);
+}
+
+  .header .contents {
+    display: flex;
+    padding: 24px 32px;
+  }
+
+  .header__libname {
+    flex: 0 0 auto;
+    font-size: 1.5em;
+    font-weight: normal;
+    letter-spacing: .6em;
+    line-height: 1;
+  }
+
+.navigation {
+  display: flex;
+  list-style: none;
+  align-items: center;
+  padding: 0;
+  flex: 1 0 auto;
+  justify-content: space-between;
+}
+
+.navigation:nth-child(n+2) {
+  margin-left: 80px;
+}
+
+  .navigation li {
+    align-items: center;
+    display: flex;
+    font-size: 1em;
+  }
+
+  .navigation a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #038;
+    padding: 8px;
+    border-radius: 4px;
+  }
+
+  .navigation a:hover {
+    background-color: #fcfbff;
+  }
+
+
+/* main */
+main {
+  background-color: #038;
+  color: #efeffe;
+  min-width: 1140px;
+}
+
+h1, h2, h3 {
+  font-weight: normal;
+}
+
+h1 {
+  color: #e2e2f9;
+}
+
+h2, h3 {
+  color: #ddddf9;
+}
+
+main {
+  padding-bottom: 64px;
+}
+
+main a {
+  color: #ddddf9;
+}
+
+main a:hover {
+  opacity: .7;
+}
+
+main p:nth-child(n+2),
+main code:nth-child(n+2) {
+  margin-top: 24px;
+  font-size: .9em;
+}
+
+.columns {
+  display: flex;
+  width: 1140px;
+  margin: 0 auto;
+  justify-content: space-between;
+}
+
+.columns__main {
+  flex-shrink: 0;
+  flex-basis: 752px;
+  width: 752px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+  .columns__main section {
+    padding-top: 48px;
+    border-top: 1px solid rgba(255, 255, 255, .12);
+  }
+
+.columns__sub {
+  flex-shrink: 0;
+  flex-basis: 364px;
+  width: 364px;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+code {
+  white-space: pre-line;
+  background-color: #ddddf9;
+  color: #038;
+  padding: 16px;
+  display: block;
+  border-radius: 4px;
+}
+
+code::before {
+  content: '$';
+  margin-right: .5em;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  border-left: 4px solid #08a;
+  color: #ddddf9;
+  padding: 2px 12px;
+}
+
+  .option__type {
+    display: inline-block;
+    background-color: 8px solid #10a;
+    font-size: .8em;
+    border-radius: 4px;
+    margin-left: 16px;
+  }
+    .option__type::before {
+      content: '<';
+      margin-right: 2px;
+      font-size: 1.2em;
+    }
+    .option__type::after {
+      content: '>';
+      margin-left: 2px;
+      font-size: 1.2em;
+    }
+
+  .option__default {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #efeffe;
+    font-size: .72em;
+    border-radius: 4px;
+    padding: .08em .4em;
+    margin-left: 16px;
+  }
+
+    .option__default::before {
+      content: 'default';
+      background-color: #efeffe;
+      color: #038;
+      padding: .08em .4em;
+      font-size: .63em;
+      margin-right: 8px;
+      border-radius: 2px;
+      font-weight: bold;
+    }
+
+.local-navigation a {
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.local-navigation:nth-child(n+2) {
+  margin-top: 48px;
+}
+
+.local-navigation ul:nth-child(n+2) {
+  margin-top: 16px;
+}
+
+.local-navigation li ul:nth-child(n+2) {
+  margin-top: 0;
+}
+
+/* footer */
+footer {
+  min-width: 1140px;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.2);
+}
+footer .contents {
+  padding: 32px;
+}
+
+/* ad */
+.ad {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #efeffe;
+  color: #038;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.ad:nth-child(n+2) {
+  margin-top: 48px;
+}
+
+.ad--rectangle {
+  width: 300px;
+  height: 300px;
+}
+
+.ad--halfpage {
+  width: 300px;
+  height: 600px;
+}
