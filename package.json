@@ -1,7 +1,7 @@
 {
-  "name": "js-boilerplate-simple",
+  "name": "stuck-js",
   "version": "0.0.1",
-  "description": "",
+  "description": "extended sticky implements",
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --config ./webpack.config.development.js --progress --colors --watch",
