@@ -2,13 +2,22 @@
   "presets": [
     ["@babel/preset-env", {
       "targets": {
-        "browsers": ["last 2 versions"]
+        "browsers": [
+          "last 2 versions",
+          "> 5%"
+        ]
       }
     }]
   ],
   "plugins": [
-    "transform-class",
     "transform-flow-comments",
+    "transform-class",
+    "transform-decorators-legacy",
+    "transform-decorators",
+    ["@babel/plugin-transform-runtime", {
+      "polyfill": false,
+      "regenerator": true
+    }],
     "@babel/plugin-syntax-flow",
     "transform-flow-strip-types",
     "@babel/plugin-proposal-object-rest-spread"
