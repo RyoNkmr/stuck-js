@@ -24,19 +24,17 @@ export default class Placeholder {
     }
   }
 
+  @debounced()
   updateSize(): void {
-    clearTimeout(this.updateTimerId);
-    this.updateTimerId = setTimeout(() => {
-      const originalRect: DOMRect = this.original.getBoundingClientRect();
-      const placeholderRect: DOMRect = this.original.getBoundingClientRect();
+    const originalRect: DOMRect = this.original.getBoundingClientRect();
+    const placeholderRect: DOMRect = this.original.getBoundingClientRect();
 
-      if (originalRect.width !== placeholderRect.width) {
-        this.placeholder.style.width = `${originalRect.width}px`;
-      }
-      if (originalRect.height !== placeholderRect.height) {
-        this.placeholder.style.height = `${originalRect.height}px`;
-      }
-    }, this.updateDebounceWait);
+    if (originalRect.width !== placeholderRect.width) {
+      this.element.style.width = `${originalRect.width}px`;
+    }
+    if (originalRect.height !== placeholderRect.height) {
+      this.element.style.height = `${originalRect.height}px`;
+    }
   }
 
   static detectSizeMutation({ type, attributeName }: MutationRecord): boolean {
