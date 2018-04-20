@@ -1,23 +1,25 @@
 /* @flow */
+import { debounced } from './util-decorators';
+
 export default class Placeholder {
   original: HTMLElement;
-  placeholder: HTMLElement;
+  element: HTMLElement;
   wrapped: boolean;
   observer: MutationObserver;
-  updateTimerId: number;
-  updateDebounceWait: number;
 
-  constructor(element: HTMLElement, observe: boolean = true, updateDebounceWait: number = 100) {
+  constructor(
+    element: HTMLElement,
+    placehold: boolean = true,
+    observe: boolean = true,
+  ) {
     if (!element || !element.nodeName) {
       throw new TypeError(`[Stuck.js Error] ${element} is not valid Element`);
     }
     this.original = element;
-    this.placeholder = Placeholder.createPlaceholder(element);
-    this.updateDebounceWait = updateDebounceWait;
+    this.element = Placeholder.createPlaceholder(element, placehold);
+    Placeholder.wrap(this.original, this.element);
 
-    Placeholder.wrap(this.original, this.placeholder);
-
-    if (observe) {
+    if (placehold && observe) {
       this.observer = Placeholder.createObserver(this.original, this.updateSize);
     }
   }
@@ -38,7 +40,6 @@ export default class Placeholder {
   }
 
   static detectSizeMutation({ type, attributeName }: MutationRecord): boolean {
-    console.log(type, attributeName);
     return (
       type === 'childList'
       || (type === 'attributes'
@@ -75,14 +76,17 @@ export default class Placeholder {
     return wrapper;
   }
 
-  static createPlaceholder(element: HTMLElement): HTMLElement {
+  static createPlaceholder(element: HTMLElement, placehold: boolean = true): HTMLElement {
     const placeholder: HTMLElement = document.createElement('div');
-    const computedStyles: CSSStyleDeclaration = window.getComputedStyle(element);
-    const originalRect: DOMRect = element.getBoundingClientRect();
 
-    placeholder.style.margin = computedStyles.margin;
-    placeholder.style.width = `${originalRect.width}px`;
-    placeholder.style.height = `${originalRect.height}px`;
+    if (placehold) {
+      const computedStyles: CSSStyleDeclaration = window.getComputedStyle(element);
+      const originalRect: DOMRect = element.getBoundingClientRect();
+
+      placeholder.style.margin = computedStyles.margin;
+      placeholder.style.width = `${originalRect.width}px`;
+      placeholder.style.height = `${originalRect.height}px`;
+    }
 
     return placeholder;
   }
