@@ -61,7 +61,7 @@ export function debounce(
   const fn = async (...args) => {
     try {
       if (timerId === null && leading) {
-        callback.apply('debounced', context, args);
+        callback.apply(context, args);
       }
 
       if (timerId && cancel) {
