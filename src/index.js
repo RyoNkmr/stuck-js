@@ -1,3 +1,5 @@
 /* @flow */
-const message: string = 'this is entrypoint';
-console.error(message);
+import Sticky from './sticky';
+import Placeholder from './placeholder';
+
+export { Sticky, Placeholder };

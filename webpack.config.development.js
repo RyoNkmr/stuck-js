@@ -3,10 +3,13 @@ const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.js',
+  entry: {
+    lib: './src/index.js',
+    demo: './demo/demo.js',
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: "index.js",
+    filename: '[name].js',
   },
   module: {
     rules: [
