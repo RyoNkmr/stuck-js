@@ -15,6 +15,7 @@ export default class Sticky {
   isSticky: ?boolean;
 
   static instances = [];
+  static activated = false;
 
   get isSticky() {
     return this.element !== null && this.element.style.position === 'fixed';
@@ -51,12 +52,22 @@ export default class Sticky {
   }
 
   static activate(): void {
-    window.addEventListener('scroll', throttle(Sticky.bulkUpdate, 16));
+    if (!Sticky.activated) {
+      window.addEventListener('scroll', Sticky.bulkUpdate);
+      Sticky.activated = true;
+    }
   }
 
-  static bulkUpdate(): void {
-    Sticky.instances.forEach(instance => instance.update());
+  static deactivate(): void {
+    if (Sticky.activated) {
+      window.removeEventListener('scroll', Sticky.bulkUpdate);
+      Sticky.activated = false;
+    }
   }
+
+  static bulkUpdate: void = throttle(() => {
+    Sticky.instances.forEach(instance => instance.update());
+  }, 16);
 
   update(): void {
     const rect = this.element.getBoundingClientRect();
