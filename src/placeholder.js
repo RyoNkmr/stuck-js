@@ -4,7 +4,6 @@ import { debounced } from './util-decorators';
 export default class Placeholder {
   original: HTMLElement;
   element: HTMLElement;
-  wrapped: boolean;
   observer: MutationObserver;
 
   constructor(
