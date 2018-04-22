@@ -1,9 +1,10 @@
 /* @flow */
-import { debounced } from './util-decorators';
+import throttle from 'lodash.throttle';
 
 export default class Placeholder {
   original: HTMLElement;
   element: HTMLElement;
+  cachedRect: DOMRect;
   observer: MutationObserver;
 
   constructor(
@@ -16,6 +17,9 @@ export default class Placeholder {
     }
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
+    this.cachedRect = this.element.getBoundingClientRect();
+    this.updateSize = throttle(this.updateSize, 166);
+
     Placeholder.wrap(this.original, this.element);
     if (placehold && observe) {
       this.observer = Placeholder.createObserver(this.original, this.updateSize);
@@ -31,17 +35,17 @@ export default class Placeholder {
     this.element = null;
   }
 
-  @debounced(166)
   updateSize(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
-    const placeholderRect: DOMRect = this.original.getBoundingClientRect();
 
-    if (originalRect.width !== placeholderRect.width) {
+    if (originalRect.width !== this.cachedRect.width) {
       this.element.style.width = `${originalRect.width}px`;
     }
-    if (originalRect.height !== placeholderRect.height) {
+    if (originalRect.height !== this.cachedRect.height) {
       this.element.style.height = `${originalRect.height}px`;
     }
+
+    this.cachedRect = this.element.getBoundingClientRect();
   }
 
   static detectSizeMutation({ type, attributeName }: MutationRecord): boolean {
@@ -58,7 +62,7 @@ export default class Placeholder {
 
   static createObserver(targetNode: HTMLElement, callback: () => mixed): MutationObserver {
     const observer = new MutationObserver((mutations: Array<MutationRecord>) => {
-      const isMutated = mutations.some(Placeholder.detectMutation);
+      const isMutated = mutations.some(Placeholder.detectSizeMutation);
       if (isMutated) {
         callback();
       }
