@@ -1,7 +1,6 @@
 /* @flow */
 export function throttle(
   callback,
-  context,
   duration = 5000,
   leading = true,
   trailing = true,
@@ -10,7 +9,7 @@ export function throttle(
   let cancel = null;
   let lastExcecutedMs = null;
 
-  const fn = async (...args) => {
+  const fn = async function _throttle(...args) {
     try {
       const now = Date.now();
 
@@ -18,7 +17,7 @@ export function throttle(
         lastExcecutedMs = now;
 
         if (leading) {
-          callback.apply(context, args);
+          callback.apply(this, args);
           return;
         }
       }
@@ -33,7 +32,7 @@ export function throttle(
       });
 
       lastExcecutedMs = now;
-      callback.apply(context, args);
+      callback.apply(this, args);
     } catch (error) {
       if (error) {
         throw error;
@@ -41,7 +40,7 @@ export function throttle(
       clearTimeout(timerId);
       cancel = null;
       if (trailing) {
-        fn();
+        fn.apply(this, args);
       }
     }
   };
@@ -50,7 +49,6 @@ export function throttle(
 
 export function debounce(
   callback,
-  context,
   duration = 5000,
   leading = false,
   trailing = true,
@@ -58,10 +56,10 @@ export function debounce(
   let timerId = null;
   let cancel = null;
 
-  const fn = async (...args) => {
+  const fn = async function _debounce(...args) {
     try {
       if (timerId === null && leading) {
-        callback.apply(context, args);
+        callback.apply(this, args);
       }
 
       if (timerId && cancel) {
@@ -82,7 +80,7 @@ export function debounce(
       if (leading && !trailing) {
         return;
       }
-      callback.apply(context, args);
+      callback.apply(this, args);
     } catch (error) {
       if (error) {
         throw error;
@@ -92,38 +90,31 @@ export function debounce(
       cancel = null;
 
       if (trailing) {
-        fn();
+        fn.apply(this, args);
       }
     }
   };
-
   return fn;
 }
 
 export const throttled = (duration = 100, leading = true, trailing = true) => (
   (
-    className,
-    methodName,
+    targetClass: Class,
+    methodName: string,
     descriptor: PropertyDescriptor<T>,
-  ): PropertyDescriptor<T> => {
-    const undecorated = descriptor.value;
-    return {
-      ...descriptor,
-      value: throttle(undecorated, descriptor, duration, leading, trailing),
-    };
-  }
+  ): PropertyDescriptor<T> => ({
+    ...descriptor,
+    value: throttle(descriptor.value, duration, leading, trailing),
+  })
 );
 
 export const debounced = (duration = 100, leading = false, trailing = true) => (
   (
-    className,
-    methodName,
+    targetClass: Class,
+    methodName: string,
     descriptor: PropertyDescriptor<T>,
-  ): PropertyDescriptor<T> => {
-    const undecorated = descriptor.value;
-    return {
-      ...descriptor,
-      value: debounce(undecorated, descriptor, duration, leading, trailing),
-    };
-  }
+  ): PropertyDescriptor<T> => ({
+    ...descriptor,
+    value: debounce(descriptor.value, duration, leading, trailing),
+  })
 );
