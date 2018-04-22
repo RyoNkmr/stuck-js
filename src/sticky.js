@@ -1,4 +1,5 @@
 /* @flow */
+import throttle from 'lodash.throttle';
 import Placeholder from './placeholder';
 
 type StickyOptions = {
@@ -11,6 +12,19 @@ export default class Sticky {
   element: HTMLElement;
   options: StickyOptions;
   placeholder: Class<Placeholder>;
+  isSticky: ?boolean;
+
+  static instances = [];
+
+  get isSticky() {
+    return this.element !== null && this.element.style.position === 'fixed';
+  }
+
+  set isSticky(value: boolean) {
+    this.element.style.position = value ? 'fixed' : null;
+    this.element.style.top = value ? `${this.options.marginTop}px` : null;
+    this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : null;
+  }
 
   constructor(
     element: HTMLElement,
@@ -19,12 +33,47 @@ export default class Sticky {
       wrapper: document.body,
       placehold: true,
     },
+    activate: boolean = true,
   ) {
     this.element = element;
     this.options = options;
+    this.placeholder = new Placeholder(element, options.placehold);
 
-    if (options.placehold) {
-      this.placeholder = new Placeholder(element);
+    Sticky.register(this);
+
+    if (activate) {
+      Sticky.activate(this);
+    }
+  }
+
+  static register(instance: Class<Sticky>): void {
+    Sticky.instances = [...Sticky.instances, instance];
+  }
+
+  static activate(): void {
+    window.addEventListener('scroll', throttle(Sticky.bulkUpdate, 16));
+  }
+
+  static bulkUpdate(): void {
+    Sticky.instances.forEach(instance => instance.update());
+  }
+
+  update(): void {
+    const rect = this.element.getBoundingClientRect();
+    const placeholderRect = this.placeholder.element.getBoundingClientRect();
+
+    if (!this.isSticky && rect.top <= this.options.marginTop) {
+      this.isSticky = true;
+      return;
+    }
+
+    if (this.isSticky) {
+      if (window.pageYOffset <= placeholderRect.top) {
+        this.isSticky = false;
+      }
+      if (window.pageXOffset > 0) {
+        this.element.style.left = `${placeholderRect.left}px`;
+      }
     }
   }
 }
