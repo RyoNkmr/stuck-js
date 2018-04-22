@@ -23,7 +23,6 @@ export default class Placeholder {
     }
   }
 
-  @debounced()
   destroy(): void {
     if (this.observer) {
       this.observer.disconnect();
@@ -33,6 +32,7 @@ export default class Placeholder {
     this.element = null;
   }
 
+  @debounced(166)
   updateSize(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
     const placeholderRect: DOMRect = this.original.getBoundingClientRect();
