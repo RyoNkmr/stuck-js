@@ -82,7 +82,7 @@ export default class Sticky {
       if (window.pageYOffset <= placeholderRect.top) {
         this.isSticky = false;
       }
-      if (window.pageXOffset > 0) {
+      if (window.pageXOffset !== 0) {
         this.element.style.left = `${placeholderRect.left}px`;
       }
     }
