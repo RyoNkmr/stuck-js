@@ -74,6 +74,14 @@ export default class Placeholder {
     return observer;
   }
 
+  static unwrap(target: HTMLElement): HTMLElement {
+    const wrapper = target.parentNode;
+    const parent = wrapper.parentNode;
+    wrapper.insertAdjacentElement('beforebegin', target);
+    parent.removeChild(wrapper);
+    return target;
+  }
+
   static wrap(target: HTMLElement, wrapper:HTMLElement): HTMLElement {
     if (target.parentNode !== wrapper) {
       target.insertAdjacentElement('beforebegin', wrapper);
