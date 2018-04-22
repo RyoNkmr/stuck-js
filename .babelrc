@@ -11,9 +11,9 @@
   ],
   "plugins": [
     "transform-flow-comments",
-    "transform-class",
     "transform-decorators-legacy",
-    "transform-decorators",
+    "transform-class",
+    "transform-class-properties",
     ["@babel/plugin-transform-runtime", {
       "polyfill": false,
       "regenerator": true
