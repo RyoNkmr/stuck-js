@@ -18,13 +18,21 @@ export default class Placeholder {
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
     Placeholder.wrap(this.original, this.element);
-
     if (placehold && observe) {
       this.observer = Placeholder.createObserver(this.original, this.updateSize);
     }
   }
 
   @debounced()
+  destroy(): void {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    Placeholder.unwrap(this.original);
+    this.element = null;
+  }
+
   updateSize(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
     const placeholderRect: DOMRect = this.original.getBoundingClientRect();
