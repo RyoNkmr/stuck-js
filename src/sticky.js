@@ -1,5 +1,4 @@
 /* @flow */
-import throttle from 'lodash.throttle';
 import Placeholder from './placeholder';
 
 type StickyOptions = {
@@ -14,8 +13,9 @@ export default class Sticky {
   placeholder: Class<Placeholder>;
   isSticky: ?boolean;
 
-  static instances = [];
-  static activated = false;
+  static instances: Array<Class<Sticky>> = [];
+  static activated: boolean = false;
+  static bulkUpdateRequestId: ?number = null;
 
   get isSticky() {
     return this.element !== null && this.element.style.position === 'fixed';
@@ -67,16 +67,22 @@ export default class Sticky {
     }
   }
 
-  static bulkPlaceholderUpdate: void = throttle(() => {
-    Sticky.instances.forEach((instance) => {
-      instance.placeholder.update();
-      instance.update();
+  static bulkPlaceholderUpdate(): void {
+    window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
+      Sticky.instances.forEach((instance) => {
+        instance.placeholder.update();
+        instance.update();
+      });
     });
-  }, 16);
+  }
 
-  static bulkUpdate: void = throttle(() => {
-    Sticky.instances.forEach(instance => instance.update());
-  }, 16);
+  static bulkUpdate(): void {
+    window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
+      Sticky.instances.forEach(instance => instance.update());
+    });
+  }
 
   update(): void {
     const rect = this.element.getBoundingClientRect();
