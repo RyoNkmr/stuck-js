@@ -38,10 +38,18 @@ export default class Placeholder {
   updateSize(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
 
-    if (originalRect.width !== this.cachedRect.width) {
+    const widthChanged = originalRect.width !== this.cachedRect.width;
+    const heightChanged = originalRect.height !== this.cachedRect.height;
+
+    if (!widthChanged && !heightChanged) {
+      return;
+    }
+
+    if (widthChanged) {
       this.element.style.width = `${originalRect.width}px`;
     }
-    if (originalRect.height !== this.cachedRect.height) {
+
+    if (heightChanged) {
       this.element.style.height = `${originalRect.height}px`;
     }
 
