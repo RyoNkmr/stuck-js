@@ -18,11 +18,11 @@ export default class Placeholder {
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
     this.cachedRect = this.element.getBoundingClientRect();
-    this.updateSize = throttle(this.updateSize, 166);
+    this.update = throttle(this.update, 166);
 
     Placeholder.wrap(this.original, this.element);
     if (placehold && observe) {
-      this.observer = Placeholder.createObserver(this.original, this.updateSize);
+      this.observer = Placeholder.createObserver(this.original, this.update);
     }
   }
 
@@ -35,7 +35,7 @@ export default class Placeholder {
     this.element = null;
   }
 
-  updateSize(): void {
+  update(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
 
     const widthChanged = originalRect.width !== this.cachedRect.width;
