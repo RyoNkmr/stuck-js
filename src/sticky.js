@@ -54,6 +54,7 @@ export default class Sticky {
   static activate(): void {
     if (!Sticky.activated) {
       window.addEventListener('scroll', Sticky.bulkUpdate);
+      window.addEventListener('resize', Sticky.bulkPlaceholderUpdate);
       Sticky.activated = true;
     }
   }
@@ -61,9 +62,17 @@ export default class Sticky {
   static deactivate(): void {
     if (Sticky.activated) {
       window.removeEventListener('scroll', Sticky.bulkUpdate);
+      window.removeEventListener('resize', Sticky.bulkPlaceholderUpdate);
       Sticky.activated = false;
     }
   }
+
+  static bulkPlaceholderUpdate: void = throttle(() => {
+    Sticky.instances.forEach((instance) => {
+      instance.placeholder.update();
+      instance.update();
+    });
+  }, 16);
 
   static bulkUpdate: void = throttle(() => {
     Sticky.instances.forEach(instance => instance.update());
