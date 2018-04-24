@@ -5,8 +5,6 @@ export default class Placeholder {
   cachedRect: DOMRect;
   observer: MutationObserver;
 
-  static bulkUpdateRequestId: ?number = null;
-
   constructor(
     element: HTMLElement,
     placehold: boolean = true,
@@ -71,10 +69,7 @@ export default class Placeholder {
     const observer = new MutationObserver((mutations: Array<MutationRecord>) => {
       const isMutated = mutations.some(Placeholder.detectSizeMutation);
       if (isMutated) {
-        window.cancelAnimationFrame(Placeholder.sharedObserverRequestId);
-        Placeholder.sharedObserverRequestId = window.requestAnimationFrame(() => {
-          callback();
-        });
+        callback();
       }
     });
 
