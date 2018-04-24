@@ -1,7 +1,7 @@
 /* @flow */
 import Placeholder from './placeholder';
 
-type StickyOptions = {
+export type StickyOptions = {
   marginTop: number,
   wrapper: HTMLElement,
   placehold: boolean,
@@ -27,23 +27,32 @@ export default class Sticky {
     this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : null;
   }
 
+  get top() {
+    return this.options.marginTop;
+  }
+
+  set top(value) {
+    this.options.marginTop = value;
+  }
+
   constructor(
     element: HTMLElement,
-    options: StickyOptions = {
-      marginTop: 0,
-      wrapper: document.body,
-      placehold: true,
-    },
+    options: StickyOptions,
     activate: boolean = true,
   ) {
     this.element = element;
-    this.options = options;
-    this.placeholder = new Placeholder(element, options.placehold);
+    this.options = {
+      marginTop: 0,
+      wrapper: document.body,
+      placehold: true,
+      ...options,
+    };
+    this.placeholder = new Placeholder(element, this.options.placehold);
 
     Sticky.register(this);
 
     if (activate) {
-      Sticky.activate(this);
+      Sticky.activate();
     }
   }
 
@@ -52,10 +61,11 @@ export default class Sticky {
   }
 
   static activate(): void {
-    if (!Sticky.activated) {
+    if (!Sticky.activated && Sticky.instances.length > 0) {
       window.addEventListener('scroll', Sticky.bulkUpdate);
       window.addEventListener('resize', Sticky.bulkPlaceholderUpdate);
       Sticky.activated = true;
+      Sticky.bulkUpdate();
     }
   }
 
