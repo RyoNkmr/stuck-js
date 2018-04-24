@@ -1,11 +1,11 @@
 /* @flow */
-import throttle from 'lodash.throttle';
-
 export default class Placeholder {
   original: HTMLElement;
   element: HTMLElement;
   cachedRect: DOMRect;
   observer: MutationObserver;
+
+  static bulkUpdateRequestId: ?number = null;
 
   constructor(
     element: HTMLElement,
@@ -18,7 +18,6 @@ export default class Placeholder {
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
     this.cachedRect = this.element.getBoundingClientRect();
-    this.update = throttle(this.update, 166);
 
     Placeholder.wrap(this.original, this.element);
     if (placehold && observe) {
@@ -72,7 +71,10 @@ export default class Placeholder {
     const observer = new MutationObserver((mutations: Array<MutationRecord>) => {
       const isMutated = mutations.some(Placeholder.detectSizeMutation);
       if (isMutated) {
-        callback();
+        window.cancelAnimationFrame(Placeholder.sharedObserverRequestId);
+        Placeholder.sharedObserverRequestId = window.requestAnimationFrame(() => {
+          callback();
+        });
       }
     });
 
