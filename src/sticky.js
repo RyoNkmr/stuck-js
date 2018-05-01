@@ -33,6 +33,7 @@ export default class Sticky {
 
   set top(value) {
     this.options.marginTop = value;
+    this.update();
   }
 
   constructor(
@@ -95,19 +96,19 @@ export default class Sticky {
   }
 
   update(): void {
-    const rect = this.element.getBoundingClientRect();
     const placeholderRect = this.placeholder.element.getBoundingClientRect();
 
-    if (!this.isSticky && rect.top <= this.options.marginTop) {
+    if (!this.isSticky && placeholderRect.top <= this.options.marginTop) {
       this.isSticky = true;
       return;
     }
 
     if (this.isSticky) {
-      if (placeholderRect.top >= 0) {
+      if (placeholderRect.top >= this.options.marginTop) {
         this.isSticky = false;
         return;
       }
+      const rect = this.element.getBoundingClientRect();
       if (rect.left !== placeholderRect.left) {
         this.element.style.left = `${placeholderRect.left}px`;
       }

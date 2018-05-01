@@ -1,5 +1,6 @@
 /* @flow */
-import Sticky from './sticky';
 import Placeholder from './placeholder';
+import Sticky from './sticky';
+import Stuck from './stuck';
 
-export { Sticky, Placeholder };
+export { Stuck, Sticky, Placeholder };

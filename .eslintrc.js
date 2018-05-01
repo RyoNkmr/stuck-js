@@ -11,6 +11,7 @@ module.exports = {
   rules: {
     'flowtype/define-flow-type': 1,
     'flowtype/use-flow-type': 1,
+    'no-param-reassign': ['error', { props: false }],
   },
   globals: {
     window: true,
