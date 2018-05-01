@@ -25,6 +25,9 @@ export default class Sticky {
     this.element.style.position = value ? 'fixed' : null;
     this.element.style.top = value ? `${this.top}px` : null;
     this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : null;
+    if (value) {
+      this.computePositionTopFromRect();
+    }
     return value;
   }
 
@@ -79,10 +82,10 @@ export default class Sticky {
   }
 
   static computeAbsoluteFloor(target: HTMLElement): number {
-    const { bottom } = target.getBoundingClientRect();
+    const absoluteBottom = target.getBoundingClientRect().bottom + global.pageYOffset;
     const { paddingBottom } = window.getComputedStyle(target);
     const paddingBottomPixels = parseInt(paddingBottom, 10) || 0;
-    return bottom - paddingBottomPixels;
+    return absoluteBottom - paddingBottomPixels;
   }
 
   static register(instance: Class<Sticky>): void {
@@ -123,7 +126,7 @@ export default class Sticky {
     });
   }
 
-  computePositionTopByRect(rect: DOMRect) {
+  computePositionTopFromRect(rect?: DOMRect = this.element.getBoundingClientRect()) {
     const relativeFloor = this.floor - global.pageYOffset;
     if (rect.bottom > relativeFloor) {
       this.top = relativeFloor - rect.height;
@@ -160,7 +163,7 @@ export default class Sticky {
         this.element.style.left = `${placeholderRect.left}px`;
       }
 
-      this.computePositionTopByRect(rect);
+      this.computePositionTopFromRect(rect);
     }
   }
 }
