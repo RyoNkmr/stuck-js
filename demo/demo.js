@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Stuck } from '../src';
+import Stuck from '../src';
 
 const instances = new Stuck([
   { selector: '#js-sticky-header', marginTop: 0 },
