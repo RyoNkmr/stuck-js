@@ -1,10 +1,9 @@
 /* @flow */
 import Sticky, { StickyOptions } from './sticky';
 
-type StickySetting = {
+type StickySetting = StickyOptions & {
   selector: string,
-  options: ?StickyOptions,
-}
+};
 
 export default class Stuck {
   instances: Array<Class<Sticky>>;
@@ -17,7 +16,7 @@ export default class Stuck {
     Sticky.activate();
   }
 
-  register({ selector, options }: StickySetting): void {
+  register({ selector, ...options }: StickySetting): void {
     const stickies = Array.from(document.querySelectorAll(selector), node => (
       new Sticky(node, { ...this.defaultOptions, ...options }, false)
     ));
@@ -29,9 +28,9 @@ export default class Stuck {
       .map(instance => ({ instance, rect: instance.element.getBoundingClientRect() }))
       .sort(({ rect: before }, { rect: after }) => before.top > after.top)
       .reduce(({ ceiling, instances }, { instance, rect }) => {
-        instance.top += ceiling;
+        instance.options.marginTop += ceiling;
         return {
-          ceiling: rect.height + instance.top,
+          ceiling: rect.height + instance.options.marginTop,
           instances: [...instances, instance],
         };
       }, { ceiling: 0, instances: [] });
