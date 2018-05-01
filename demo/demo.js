@@ -1,12 +1,5 @@
 /* eslint-disable */
-import { Sticky, Stuck } from '../src';
-//
-// const construct = (ids: Array<string>) => ids.reduce((acc, id) => ({ ...acc, [id]: new Sticky(document.querySelector(id))}), {});
-// const instances = construct([
-//   '#js-sticky-header',
-//   '#js-sticky-ad01',
-//   '#js-sticky-ad02',
-// ]);
+import { Stuck } from '../src';
 
 const instances = new Stuck([
   { selector: '#js-sticky-header', marginTop: 0 },

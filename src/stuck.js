@@ -11,7 +11,7 @@ export default class Stuck {
   constructor(settings: Array<StickySetting> = [], defaultOptions: StuckOptions = {}) {
     this.defaultOptions = defaultOptions;
     this.instances = [];
-    settings.forEach(setting => this.register(setting));
+    settings.forEach(this.register);
     this.updateStickies();
     Sticky.activate();
   }

@@ -22,9 +22,6 @@ export default class Sticky {
   }
 
   set isSticky(value: boolean): boolean {
-    if (value) {
-      this.computePositionTopByRect(this.element.getBoundingClientRect());
-    }
     this.element.style.position = value ? 'fixed' : null;
     this.element.style.top = value ? `${this.top}px` : null;
     this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : null;
