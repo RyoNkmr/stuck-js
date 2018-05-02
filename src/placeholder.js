@@ -15,9 +15,9 @@ export default class Placeholder {
     }
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
+    Placeholder.wrap(this.original, this.element);
     this.cachedRect = this.element.getBoundingClientRect();
 
-    Placeholder.wrap(this.original, this.element);
     if (placehold && observe) {
       this.observer = Placeholder.createObserver(this.original, this.update);
     }
@@ -32,6 +32,11 @@ export default class Placeholder {
     this.original = null;
     this.cachedRect = null;
     this.element = null;
+  }
+
+  updateRect(): DOMRect {
+    this.cachedRect = this.element.getBoundingClientRect();
+    return this.cachedRect;
   }
 
   update(): void {

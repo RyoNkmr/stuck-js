@@ -1,6 +1,7 @@
 /* @flow */
 import Placeholder from './placeholder';
 
+export type Stickies = Array<Class<Sticy>>;
 export type StickyOptions = {
   marginTop: number,
   wrapper: HTMLElement | string,
@@ -12,8 +13,9 @@ export default class Sticky {
   options: StickyOptions;
   placeholder: Class<Placeholder>;
   isSticky: ?boolean;
+  isStickToBottom: ?boolean = false;
 
-  static instances: Array<Class<Sticky>> = [];
+  static instances: Stickies = [];
   static activated: boolean = false;
   static bulkUpdateRequestId: ?number = null;
 
@@ -34,12 +36,12 @@ export default class Sticky {
   get top(): number {
     return (this.$$additionalTop || this.$$additionalTop === 0)
       ? this.$$additionalTop
-      : this.options.marginTop;
+      : this.marginTop;
   }
 
   set top(value: number): number {
     this.$$additionalTop = value;
-    this.element.style.top = value ? `${value}px` : `${this.options.marginTop}px`;
+    this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
     return value;
   }
 
@@ -71,9 +73,9 @@ export default class Sticky {
       placehold: true,
       ...options,
     };
+    this.marginTop = this.options.marginTop;
     this.wrapper = this.options.wrapper;
     this.placeholder = new Placeholder(element, this.options.placehold);
-
     Sticky.register(this);
 
     if (activate) {
@@ -94,6 +96,7 @@ export default class Sticky {
 
   destroy(): void {
     this.placeholder.destroy();
+    this.placeholder = null;
     this.isSticky = false;
     Sticky.instances = Sticky.instances.filter(instance => instance.element !== this.element);
     if (Sticky.instances.length < 1) {
@@ -141,32 +144,36 @@ export default class Sticky {
 
   computePositionTopFromRect(rect?: DOMRect = this.element.getBoundingClientRect()) {
     const relativeFloor = this.floor - global.pageYOffset;
-    if (rect.bottom > relativeFloor) {
+    if (rect.bottom > relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - rect.height;
+      this.isStickToBottom = true;
       return;
     }
 
-    if (this.top === this.options.marginTop) {
-      return;
+    if (this.isStickToBottom) {
+      if (rect.top === this.marginTop) {
+        this.isStickToBottom = false;
+        return;
+      }
+      if (rect.top < this.marginTop) {
+        this.top = relativeFloor - rect.height;
+        return;
+      }
     }
 
-    if (this.top < this.options.marginTop) {
-      this.top = relativeFloor - rect.height;
-      return;
-    }
     this.top = null;
   }
 
   update(): void {
     const placeholderRect = this.placeholder.element.getBoundingClientRect();
 
-    if (!this.isSticky && placeholderRect.top <= this.options.marginTop) {
+    if (!this.isSticky && placeholderRect.top <= this.marginTop) {
       this.isSticky = true;
       return;
     }
 
     if (this.isSticky) {
-      if (placeholderRect.top >= this.options.marginTop) {
+      if (placeholderRect.top >= this.marginTop) {
         this.isSticky = false;
         return;
       }
