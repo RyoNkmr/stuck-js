@@ -11,16 +11,28 @@ export default class Stuck {
   constructor(settings: Array<StickySetting> = [], defaultOptions: StuckOptions = {}) {
     this.defaultOptions = defaultOptions;
     this.instances = [];
+    this.create(settings);
+  }
+
+  create(settings: Array<StickySetting>) {
     settings.forEach(setting => this.register(setting));
     this.updateStickies();
     Sticky.activate();
   }
 
   register({ selector, ...options }: StickySetting): void {
-    const stickies = Array.from(document.querySelectorAll(selector), node => (
-      new Sticky(node, { ...this.defaultOptions, ...options }, false)
-    ));
+    const registeredElements = this.instances.map(instance => instance.element);
+    const stickies = Array.from(document.querySelectorAll(selector))
+      .filter(element => !registeredElements.includes(element))
+      .map(node => (
+        new Sticky(node, { ...this.defaultOptions, ...options }, false)
+      ));
     this.instances = [...this.instances, ...stickies];
+  }
+
+  destroy() {
+    this.instances.forEach(instance => instance.destroy());
+    this.instances = [];
   }
 
   updateStickies(): void {
