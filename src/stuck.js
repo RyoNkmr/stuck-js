@@ -37,8 +37,12 @@ export default class Stuck {
 
   updateStickies(): void {
     const { instances: updated } = this.instances
-      .map(instance => ({ instance, rect: instance.element.getBoundingClientRect() }))
-      .sort(({ rect: before }, { rect: after }) => before.top > after.top)
+      .map(instance => ({
+        instance,
+        cachedRect: instance.placeholder.cachedRect,
+        rect: instance.element.getBoundingClientRect(),
+      }))
+      .sort(({ cachedRect: before }, { cachedRect: after }) => before.top > after.top)
       .reduce(({ ceiling, instances }, { instance, rect }) => {
         instance.options.marginTop += ceiling;
         return {
