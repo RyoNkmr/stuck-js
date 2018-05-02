@@ -92,6 +92,19 @@ export default class Sticky {
     Sticky.instances = [...Sticky.instances, instance];
   }
 
+  destroy(): void {
+    this.placeholder.destroy();
+    this.isSticky = false;
+    Sticky.instances = Sticky.instances.filter(instance => instance.element !== this.element);
+    if (Sticky.instances.length < 1) {
+      Sticky.deactivate();
+    }
+  }
+
+  static destroyAll(): void {
+    Sticky.instances.forEach(instance => instance.destroy());
+  }
+
   static activate(): void {
     if (!Sticky.activated && Sticky.instances.length > 0) {
       window.addEventListener('scroll', Sticky.bulkUpdate);
