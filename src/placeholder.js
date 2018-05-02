@@ -29,12 +29,13 @@ export default class Placeholder {
       this.observer = null;
     }
     Placeholder.unwrap(this.original);
+    this.original = null;
+    this.cachedRect = null;
     this.element = null;
   }
 
   update(): void {
     const originalRect: DOMRect = this.original.getBoundingClientRect();
-
     const widthChanged = originalRect.width !== this.cachedRect.width;
     const heightChanged = originalRect.height !== this.cachedRect.height;
 
