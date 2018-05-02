@@ -110,8 +110,8 @@ export default class Sticky {
       window.addEventListener('scroll', Sticky.bulkUpdate);
       window.addEventListener('resize', Sticky.bulkPlaceholderUpdate);
       Sticky.activated = true;
-      Sticky.bulkUpdate();
     }
+    Sticky.bulkUpdate();
   }
 
   static deactivate(): void {
