@@ -1,5 +1,6 @@
 /* @flow */
-import Sticky, { Stickies, StickyOptions } from './sticky';
+import Sticky from './sticky';
+import type { Stickies, StickyOptions } from './sticky';
 
 type StickySetting = StickyOptions & {
   selector: string,
@@ -8,19 +9,20 @@ type StickySetting = StickyOptions & {
 export default class Stuck {
   static stackingInstances: Stickies = [];
   static registeredInstances: Stickies = [];
-  instances: Array<Class<Sticky>>;
+
+  defaultOptions: StickyOptions;
+  instances: Stickies = [];
 
   constructor(
     settings: Array<StickySetting> = [],
-    defaultOptions: StuckOptions = {},
-    sharedStacking = true,
+    defaultOptions: StickyOptions = {},
+    sharedStacking: boolean = true,
   ) {
     this.defaultOptions = defaultOptions;
-    this.instances = [];
     this.create(settings, sharedStacking);
   }
 
-  create(source: Array<StickySetting>|StickySetting, sharedStacking = true) {
+  create(source: Array<StickySetting>|StickySetting, sharedStacking: boolean = true) {
     const settings = Array.isArray(source) ? source : [source];
     const registered = settings.reduce((accumulator, setting) => (
       [...accumulator, ...this.register(setting, sharedStacking)]
@@ -29,7 +31,7 @@ export default class Stuck {
     Sticky.activate();
   }
 
-  register({ selector, ...options }: StickySetting, sharedStacking = true): Stickies {
+  register({ selector, ...options }: StickySetting, sharedStacking: boolean = true): Stickies {
     const targetElements = [...document.querySelectorAll(selector)]
       .filter(target => !Stuck.registeredInstances.map(({ element }) => element).includes(target));
     if (targetElements.length < 1) {
@@ -64,7 +66,7 @@ export default class Stuck {
   static updateAndSort(instances: Stickies) {
     Stuck.update(instances);
     instances.sort((before, after) => (
-      before.placeholder.cachedRect.top > after.placeholder.cachedRect.top
+      before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     ));
   }
 
@@ -77,7 +79,7 @@ export default class Stuck {
         instance,
         rect: instance.placeholder.updateRect(),
       }))
-      .sort(({ rect: before }, { rect: after }) => before.top > after.top)
+      .sort(({ rect: before }, { rect: after }) => before.top - after.top)
       .reduce((ceiling, { instance, rect }) => {
         instance.marginTop = instance.options.marginTop + ceiling;
         return rect.height + instance.marginTop;

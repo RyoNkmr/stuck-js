@@ -1,19 +1,23 @@
 /* @flow */
 import Placeholder from './placeholder';
 
-export type Stickies = Array<Class<Sticy>>;
 export type StickyOptions = {
-  marginTop: number,
-  wrapper: HTMLElement | string,
-  placehold: boolean,
+  marginTop?: number,
+  wrapper?: HTMLElement|string,
+  placehold?: boolean,
 };
 
 export default class Sticky {
   element: HTMLElement;
   options: StickyOptions;
-  placeholder: Class<Placeholder>;
+  placeholder: Placeholder;
+  marginTop: number = 0;
   isSticky: ?boolean;
   isStickToBottom: ?boolean = false;
+  // private
+  $$wrapper: HTMLElement;
+  $$floor: number;
+  $$additionalTop: ?number;
 
   static instances: Stickies = [];
   static activated: boolean = false;
@@ -24,9 +28,9 @@ export default class Sticky {
   }
 
   set isSticky(value: boolean): boolean {
-    this.element.style.position = value ? 'fixed' : null;
-    this.element.style.top = value ? `${this.top}px` : null;
-    this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : null;
+    this.element.style.position = value ? 'fixed' : '';
+    this.element.style.top = value ? `${this.top}px` : '';
+    this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : '';
     if (value) {
       this.computePositionTopFromRect();
     }
@@ -39,7 +43,7 @@ export default class Sticky {
       : this.marginTop;
   }
 
-  set top(value: number): number {
+  set top(value: ?number): ?number {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
     return value;
@@ -53,10 +57,11 @@ export default class Sticky {
     return this.$$wrapper;
   }
 
-  set wrapper(value: HTMLElement): HTMLElement {
-    this.$$wrapper = typeof value === 'string'
-      ? document.querySelector(value)
-      : (value || document.body);
+  set wrapper(value: HTMLElement|string): HTMLElement {
+    if (document.body === null) {
+      throw new Error('[Stuck.js] document.body is not HTMLElement in this environment');
+    }
+    this.$$wrapper = Sticky.normalizeElement(value, document.body);
     this.$$floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
     return this.$$wrapper;
@@ -75,7 +80,7 @@ export default class Sticky {
     };
     this.marginTop = this.options.marginTop;
     this.wrapper = this.options.wrapper;
-    this.placeholder = new Placeholder(element, this.options.placehold);
+    this.placeholder = new Placeholder(element, this.options.placehold, true, Sticky.bulkUpdate);
     Sticky.register(this);
 
     if (activate) {
@@ -90,15 +95,30 @@ export default class Sticky {
     return absoluteBottom - paddingBottomPixels;
   }
 
-  static register(instance: Class<Sticky>): void {
+  static normalizeElement<T>(value: string|HTMLElement, fallback: T): HTMLElement|T {
+    if (value instanceof HTMLElement) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      return document.querySelector(value) || fallback;
+    }
+    if (fallback instanceof HTMLElement) {
+      return fallback;
+    }
+    throw new TypeError(`[Stuck.js] ${String(fallback)} is not HTMLElement`);
+  }
+
+  static register(instance: Sticky): void {
     Sticky.instances = [...Sticky.instances, instance];
   }
 
   destroy(): void {
     this.placeholder.destroy();
-    this.placeholder = null;
     this.isSticky = false;
-    Sticky.instances = Sticky.instances.filter(instance => instance.element !== this.element);
+    Sticky.instances = Sticky.instances.filter(instance => instance !== this);
+    delete this.placeholder;
+    delete this.element;
+    delete this.options;
     if (Sticky.instances.length < 1) {
       Sticky.deactivate();
     }
@@ -142,7 +162,7 @@ export default class Sticky {
     });
   }
 
-  computePositionTopFromRect(rect?: DOMRect = this.element.getBoundingClientRect()) {
+  computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
     const relativeFloor = this.floor - global.pageYOffset;
     if (rect.bottom > relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - rect.height;
@@ -187,3 +207,5 @@ export default class Sticky {
     }
   }
 }
+
+export type Stickies = Sticky[];

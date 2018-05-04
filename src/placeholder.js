@@ -2,21 +2,22 @@
 export default class Placeholder {
   original: HTMLElement;
   element: HTMLElement;
-  cachedRect: DOMRect;
+  cachedRect: ClientRect;
   observer: MutationObserver;
+  onUpdate: () => mixed;
 
   constructor(
     element: HTMLElement,
     placehold: boolean = true,
     observe: boolean = true,
+    onUpdate: () => mixed = () => {},
   ) {
-    if (!element || !element.nodeName) {
-      throw new TypeError(`[Stuck.js Error] ${element} is not valid Element`);
-    }
     this.original = element;
     this.element = Placeholder.createPlaceholder(element, placehold);
+
     Placeholder.wrap(this.original, this.element);
-    this.cachedRect = this.element.getBoundingClientRect();
+    this.cachedRect = this.element && this.element.getBoundingClientRect();
+    this.onUpdate = onUpdate;
 
     if (placehold && observe) {
       this.observer = Placeholder.createObserver(this.original, this.update);
@@ -26,21 +27,22 @@ export default class Placeholder {
   destroy(): void {
     if (this.observer) {
       this.observer.disconnect();
-      this.observer = null;
+      delete this.observer;
     }
     Placeholder.unwrap(this.original);
-    this.original = null;
-    this.cachedRect = null;
-    this.element = null;
+    delete this.element;
+    delete this.original;
+    delete this.cachedRect;
+    delete this.onUpdate;
   }
 
-  updateRect(): DOMRect {
+  updateRect(): ClientRect {
     this.cachedRect = this.element.getBoundingClientRect();
     return this.cachedRect;
   }
 
   update(): void {
-    const originalRect: DOMRect = this.original.getBoundingClientRect();
+    const originalRect: ClientRect = this.original.getBoundingClientRect();
     const widthChanged = originalRect.width !== this.cachedRect.width;
     const heightChanged = originalRect.height !== this.cachedRect.height;
 
@@ -57,21 +59,24 @@ export default class Placeholder {
     }
 
     this.cachedRect = this.element.getBoundingClientRect();
+    this.onUpdate();
   }
 
   static detectSizeMutation({ type, attributeName }: MutationRecord): boolean {
     return (
       type === 'childList'
-      || (type === 'attributes'
-        && (
-          attributeName !== null
-          && /width|height/i.attributeName
-        )
+      || (
+        type === 'attributes'
+        && (typeof attributeName === 'string' && /width|height/.test(attributeName))
       )
     );
   }
 
-  static createObserver(targetNode: HTMLElement, callback: () => mixed): MutationObserver {
+  static createObserver(targetNode: ?HTMLElement, callback: () => mixed): MutationObserver {
+    if (!targetNode) {
+      throw new TypeError(`[Stuck.js] Could not create mutation observer on targetNode ${String(targetNode)}. This should be HTMLElement`);
+    }
+
     const observer = new MutationObserver((mutations: Array<MutationRecord>) => {
       const isMutated = mutations.some(Placeholder.detectSizeMutation);
       if (isMutated) {
@@ -90,13 +95,19 @@ export default class Placeholder {
 
   static unwrap(target: HTMLElement): HTMLElement {
     const wrapper = target.parentNode;
-    const parent = wrapper.parentNode;
-    wrapper.insertAdjacentElement('beforebegin', target);
-    parent.removeChild(wrapper);
+
+    if (wrapper instanceof HTMLElement) {
+      wrapper.insertAdjacentElement('beforebegin', target);
+      const parent = wrapper.parentNode;
+
+      if (parent instanceof HTMLElement) {
+        parent.removeChild(wrapper);
+      }
+    }
     return target;
   }
 
-  static wrap(target: HTMLElement, wrapper:HTMLElement): HTMLElement {
+  static wrap(target: HTMLElement, wrapper: HTMLElement): HTMLElement {
     if (target.parentNode !== wrapper) {
       target.insertAdjacentElement('beforebegin', wrapper);
       wrapper.appendChild(target);
@@ -109,7 +120,7 @@ export default class Placeholder {
 
     if (placehold) {
       const computedStyles: CSSStyleDeclaration = window.getComputedStyle(element);
-      const originalRect: DOMRect = element.getBoundingClientRect();
+      const originalRect: ClientRect = element.getBoundingClientRect();
 
       placeholder.style.margin = computedStyles.margin;
       placeholder.style.width = `${originalRect.width}px`;
