@@ -95,17 +95,11 @@ export default class Sticky {
     return absoluteBottom - paddingBottomPixels;
   }
 
-  static normalizeElement<T>(value: string|HTMLElement, fallback: T): HTMLElement|T {
+  static normalizeElement(value: string|HTMLElement, fallback: HTMLElement): HTMLElement {
     if (value instanceof HTMLElement) {
       return value;
     }
-    if (typeof value === 'string') {
-      return document.querySelector(value) || fallback;
-    }
-    if (fallback instanceof HTMLElement) {
-      return fallback;
-    }
-    throw new TypeError(`[Stuck.js] ${String(fallback)} is not HTMLElement`);
+    return document.querySelector(value) || fallback;
   }
 
   static register(instance: Sticky): void {
