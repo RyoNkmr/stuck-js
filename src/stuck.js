@@ -14,7 +14,7 @@ export default class Stuck {
   instances: Stickies = [];
 
   constructor(
-    settings: Array<StickySetting> = [],
+    settings: StickySetting[] | StickySetting = [],
     defaultOptions: StickyOptions = {},
     sharedStacking: boolean = true,
   ) {
@@ -22,13 +22,17 @@ export default class Stuck {
     this.create(settings, sharedStacking);
   }
 
-  create(source: Array<StickySetting>|StickySetting, sharedStacking: boolean = true) {
+  create(source: Array<StickySetting>|StickySetting, sharedStacking: boolean = true): Stickies {
     const settings = Array.isArray(source) ? source : [source];
     const registered = settings.reduce((accumulator, setting) => (
       [...accumulator, ...this.register(setting, sharedStacking)]
     ), []);
-    Stuck.updateAndSort(registered);
+    if (registered.length === 0) {
+      return [];
+    }
+    Stuck.updateAndSort(Stuck.registeredInstances);
     Sticky.activate();
+    return registered;
   }
 
   register({ selector, ...options }: StickySetting, sharedStacking: boolean = true): Stickies {
