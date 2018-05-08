@@ -3,14 +3,13 @@
     ["@babel/preset-env", {
       "targets": {
         "browsers": [
-          "last 2 versions",
+          "last 1 version",
           "> 5%"
         ]
       }
     }]
   ],
   "plugins": [
-    "transform-flow-comments",
     "transform-decorators-legacy",
     "transform-class",
     "transform-class-properties",
@@ -19,7 +18,7 @@
       "regenerator": true
     }],
     "@babel/plugin-syntax-flow",
-    "transform-flow-strip-types",
-    "@babel/plugin-proposal-object-rest-spread"
+    "@babel/plugin-proposal-object-rest-spread",
+    "transform-flow-comments"
   ]
 }
