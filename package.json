@@ -1,15 +1,21 @@
 {
   "name": "stuck-js",
   "version": "0.0.1",
-  "description": "extended sticky implements",
-  "main": "index.js",
+  "description": "A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)",
+  "main": "./src/index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --config ./webpack.config.development.js --progress --colors --watch",
     "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress",
+    "build:watch": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress --watch",
     "flow": "flow",
     "test": "jest"
   },
   "author": "Ryonkmr",
+  "keywords": [
+    "sticky",
+    "scroll",
+    "fixed"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",

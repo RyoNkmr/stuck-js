@@ -15,9 +15,7 @@ jobs:
             - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
             - dependency-cache-{{ .Branch }}-
       - run: npm i
-      - run:
-          name: Build package
-          command: npm build
+      - run: npm run build
       - save_cache:
           paths:
             - node_modules
@@ -50,9 +48,9 @@ jobs:
 
 workflows:
   version: 2
-  test:
+  build_and_test:
     jobs:
       - build
-      - test
-        requires:
-          - build
+      - test:
+          requires:
+            - build

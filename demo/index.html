@@ -75,11 +75,18 @@
               vim(but I'm not vimmer but viginner😨).
             </p>
           </section>
-          <div id="js-sticky-ad01" class="ad ad--rectangle js-sticky-ad" style="z-index: 300;">
-            Sticky Rectangle Ad
+          <div class="ad ad--rectangle js-sticky-ad">
+            Rectangle
           </div>
-          <div class="ad ad--rectangle">
-            Rectangle Ad
+          <div id="js-sticky-controller" class="controller" style="z-index: 300;">
+            <div id="js-control-inner" class="controller__inner">
+              <button class="js-control" type="button" data-target="header" data-method="create">Header create</button>
+              <button class="js-control" type="button" data-target="header" data-method="destroy">Header destroy</button>
+              <button class="js-control" type="button" data-target="ads" data-method="create">Ads create</button>
+              <button class="js-control" type="button" data-target="ads" data-method="destroy">Ads destroy</button>
+              <button class="js-control-box" type="button">Change box size</button>
+              <button class="js-stack" type="button">Toggle header stacking option</button>
+            </div>
           </div>
           <div class="local-navigation">
             <h2>Contents</h2>
@@ -98,7 +105,7 @@
             </ul>
           </div>
           <div id="js-sticky-ad02" class="ad ad--halfpage js-sticky-ad" style="z-index: 200;">
-            Sticky Halfpage Ad
+            Sticky Halfpage
           </div>
         </aside>
       </div>
@@ -115,6 +122,46 @@
         </p>
       </div>
     </footer>
-    <script src="../dist/demo.js"></script>
+    <script src="../lib/index.js"></script>
+    <script>
+      const Stuck = StuckJs.Stuck;
+      const controller = new Stuck({ selector: '#js-sticky-controller', wrapper: '#js-sidebar', marginTop: 16 });
+
+      let headerStackingContext = true;
+
+      const options = {
+        header: init => (
+          init
+          ? [{ selector: '#js-sticky-header', marginTop: 0 }, {}, headerStackingContext]
+          : [{ selector: '#js-sticky-header', marginTop: 0 }, headerStackingContext]
+        ),
+        ads: () => [{ selector: '.js-sticky-ad', wrapper: '#js-sidebar', marginTop: 16 }],
+      };
+      const instances = {
+        header: new Stuck(...options.header(true)),
+        ads: new Stuck(...options.ads()),
+      };
+
+      document.querySelectorAll('.js-control').forEach(el => {
+        const data = el.dataset;
+        const instance = instances[data.target];
+        const method = instance[data.method].bind(instance);
+        el.addEventListener('click', () => {
+          const params = data.method === 'create' ? options[data.target]() : [];
+          console.log(params);
+          method(...params);
+          console.log(data.target + ' ' + data.method);
+        });
+      });
+
+      const box = document.getElementById('js-control-inner');
+      document.querySelector('.js-control-box').addEventListener('click', () => {
+        box.classList.toggle('controller__inner--larger');
+      });
+      document.querySelector('.js-stack').addEventListener('click', () => {
+        headerStackingContext = !headerStackingContext;
+        console.log(headerStackingContext);
+      });
+    </script>
   </body>
 </html>

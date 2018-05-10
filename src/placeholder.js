@@ -20,7 +20,7 @@ export default class Placeholder {
     this.onUpdate = onUpdate;
 
     if (placehold && observe) {
-      this.observer = Placeholder.createObserver(this.original, this.update);
+      this.observer = Placeholder.createObserver(this.original, () => this.update());
     }
   }
 
@@ -42,6 +42,7 @@ export default class Placeholder {
   }
 
   update(): void {
+    if (!this) return;
     const originalRect: ClientRect = this.original.getBoundingClientRect();
     const widthChanged = originalRect.width !== this.cachedRect.width;
     const heightChanged = originalRect.height !== this.cachedRect.height;
@@ -62,14 +63,8 @@ export default class Placeholder {
     this.onUpdate();
   }
 
-  static detectSizeMutation({ type, attributeName }: MutationRecord): boolean {
-    return (
-      type === 'childList'
-      || (
-        type === 'attributes'
-        && (typeof attributeName === 'string' && /width|height/.test(attributeName))
-      )
-    );
+  static detectSizeMutation({ type }: MutationRecord): boolean {
+    return type === 'childList' || type === 'attributes';
   }
 
   static createObserver(targetNode: ?HTMLElement, callback: () => mixed): MutationObserver {

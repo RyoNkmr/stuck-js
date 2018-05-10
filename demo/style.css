@@ -265,3 +265,27 @@ footer .contents {
   width: 300px;
   height: 600px;
 }
+
+.controller {
+  width: 300px;
+}
+.controller:nth-child(n+2) {
+  margin-top: 32px;
+}
+.controller__inner {
+  width: 300px;
+}
+.controller__inner.controller__inner--larger {
+  height: 500px;
+}
+
+.controller button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.controller button:nth-child(n+2) {
+  margin-top: 8px;
+}

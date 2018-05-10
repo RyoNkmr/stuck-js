@@ -53,7 +53,7 @@ export default class Stuck {
     return stickies;
   }
 
-  destroy():void {
+  destroy(): void {
     Stuck.registeredInstances = Stuck.registeredInstances.filter(registered => (
       !this.instances.includes(registered)
     ));
@@ -68,15 +68,15 @@ export default class Stuck {
   }
 
   static updateAndSort(instances: Stickies): Stickies {
-    Stuck.update(instances);
+    Stuck.update();
     instances.sort((before, after) => (
       before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     ));
     return instances;
   }
 
-  static update(instances: Stickies): void {
-    [...Stuck.stackingInstances, ...instances]
+  static update(): void {
+    [...Stuck.stackingInstances]
       .reduce((unique, instance) => (
         unique.includes(instance) ? unique : [...unique, instance]
       ), [])
