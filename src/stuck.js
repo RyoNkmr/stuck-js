@@ -67,11 +67,12 @@ export default class Stuck {
     this.instances = [];
   }
 
-  static updateAndSort(instances: Stickies) {
+  static updateAndSort(instances: Stickies): Stickies {
     Stuck.update(instances);
     instances.sort((before, after) => (
       before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     ));
+    return instances;
   }
 
   static update(instances: Stickies): void {
