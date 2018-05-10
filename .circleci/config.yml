@@ -1,0 +1,58 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/app
+  docker:
+    - image: circleci/node:10
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+            - dependency-cache-{{ .Branch }}-
+      - run: npm i
+      - run:
+          name: Build package
+          command: npm build
+      - save_cache:
+          paths:
+            - node_modules
+            - lib
+          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+            - dependency-cache-{{ .Branch }}-
+      - run: npm i
+      - run:
+          name: Add dependency for puppeteer
+          command: |
+            sudo apt-get update
+            sudo apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
+              libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
+              libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+              libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libnss3\
+      - run:
+          name: Run tests
+          command: npm test
+      - save_cache:
+          paths:
+            - node_modules
+          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build
+      - test
+        requires:
+          - build
