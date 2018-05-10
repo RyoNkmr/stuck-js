@@ -1,3 +1,5 @@
+import { scrollTo, getRect } from './puppeteerHelper';
+
 describe('Stuck', () => {
   const containerHeight = 3000;
   let viewport;
@@ -40,7 +42,7 @@ describe('Stuck', () => {
         width: 100%;
       }
     `});
-    await page.addScriptTag({ path: 'lib/lib.js' });
+    await page.addScriptTag({ path: 'lib/index.js' });
   });
 
   afterEach(async () => {
@@ -48,28 +50,6 @@ describe('Stuck', () => {
   });
 
   describe('position stacking', () => {
-    const scrollTo = scrollTop => (
-      page.evaluate(top => new Promise(resolve => {
-        let id;
-        const checker = () => {
-          if (window.scrollY < top) {
-            window.scrollBy(0, 100);
-            id = window.requestAnimationFrame(checker);
-            return;
-          }
-          resolve();
-        }
-        checker();
-      }), scrollTop)
-    );
-    const getTopPosition = (...selectors) => (
-      page.evaluate(targetSelectors => (
-        targetSelectors
-          .reduce((acc, selector) => acc.concat(Array.from(document.querySelectorAll(selector))), [])
-          .map(el => el.getBoundingClientRect().top)
-      ), selectors)
-    );
-
     test('no margin', async () => {
       await page.evaluate(() => {
         const { Stuck } = StuckJs;
@@ -79,8 +59,9 @@ describe('Stuck', () => {
           { selector: '#js-box02' },
         ]);
       });
-      await scrollTo(viewport.height);
-      const result = await getTopPosition('#js-box00', '#js-box01', '#js-box02');
+      await scrollTo(0, viewport.height);
+      const rects = await getRect('#js-box00', '#js-box01', '#js-box02');
+      const result = rects.map(el => el.top);
       expect(result).toEqual([0, 250, 650]);
     });
 
@@ -93,8 +74,9 @@ describe('Stuck', () => {
           { selector: '#js-box02', marginTop: 100 },
         ], { marginTop: 10 });
       });
-      await scrollTo(viewport.height);
-      const result = await getTopPosition('#js-box00', '#js-box01', '#js-box02');
+      await scrollTo(0, viewport.height);
+      const rects = await getRect('#js-box00', '#js-box01', '#js-box02');
+      const result = rects.map(el => el.top);
       expect(result).toEqual([20, 280, 780]);
     });
   });
