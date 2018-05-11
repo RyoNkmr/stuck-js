@@ -126,9 +126,7 @@
     <script>
       const Stuck = StuckJs.Stuck;
       const controller = new Stuck({ selector: '#js-sticky-controller', wrapper: '#js-sidebar', marginTop: 16 });
-
       let headerStackingContext = true;
-
       const options = {
         header: init => (
           init
@@ -141,26 +139,25 @@
         header: new Stuck(...options.header(true)),
         ads: new Stuck(...options.ads()),
       };
-
       document.querySelectorAll('.js-control').forEach(el => {
         const data = el.dataset;
         const instance = instances[data.target];
         const method = instance[data.method].bind(instance);
         el.addEventListener('click', () => {
           const params = data.method === 'create' ? options[data.target]() : [];
-          console.log(params);
           method(...params);
-          console.log(data.target + ' ' + data.method);
+          console.log(data.method + ' ' + data.target + ' instance');
         });
       });
-
       const box = document.getElementById('js-control-inner');
+      const largeClassName = 'controller__inner--larger';
       document.querySelector('.js-control-box').addEventListener('click', () => {
-        box.classList.toggle('controller__inner--larger');
+        box.classList.toggle(largeClassName);
+        console.log('boxSize: ' + (box.classList.contains(largeClassName) ? 'large' : 'normal'));
       });
       document.querySelector('.js-stack').addEventListener('click', () => {
         headerStackingContext = !headerStackingContext;
-        console.log(headerStackingContext);
+        console.log('headerStackingContext: ' + headerStackingContext);
       });
     </script>
   </body>
