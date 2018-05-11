@@ -3,6 +3,7 @@
 [![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=svg)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
 
 A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)
+Demo: https://ryonkmr.github.io/stuck-js/
 
 ## Quickstart
 
@@ -33,6 +34,7 @@ A sticky library handles stack of stickies and supports scrollX without dependen
   </div>
   <script src="lib/stuck.js"></script>
   <script>
+  const Stuck = StuckJs.StuckJs
   const instances = new Stuck([
     { selector: '#js-header', marginTop: 0 },
     { selector: '.js-sticky-ad', wrapper: '#js-sidebar' },
