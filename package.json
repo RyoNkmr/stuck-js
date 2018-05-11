@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --config ./webpack.config.development.js --progress --colors --watch",
-    "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress",
+    "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress && cp ./lib/index.js ./docs",
     "build:watch": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress --watch",
     "flow": "flow",
     "test": "jest"
