@@ -8,5 +8,4 @@ demo
 jest-puppeteer.config.js
 node_modules
 specs
-src
 webpack.config.*.js

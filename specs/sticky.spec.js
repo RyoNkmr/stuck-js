@@ -31,7 +31,7 @@ describe('Sticky', () => {
         height: 300px;
         background-color: #33a;
       }
-      .box.box--large {
+      .box--large {
         height: 600px;
         background-color: #a3a;
       }
@@ -42,31 +42,41 @@ describe('Sticky', () => {
       }
     `});
     await page.addScriptTag({ path: 'lib/index.js' });
+    await page.evaluate(selector => {
+      const { Sticky } = StuckJs;
+      const element = document.querySelector(selector);
+      const sticky = new Sticky(element);
+    }, target);
   }, 10000);
 
-  it('makes sticky', async () => {
-    const target = '#js-box01';
-    await page.evaluate(selector => {
-      const { Sticky } = StuckJs;
-      const element = document.querySelector(selector);
-      const sticky = new Sticky(element);
-    }, target);
-
-    await scrollTo(0, viewport.height);
-    const [{ top }] = await getRect(target);
-    expect(top).toBe(0);
+  afterEach(async () => {
+    await scrollTo(0, 0);
   });
 
-  it('preserves left position of sticky', async () => {
-    const target = '#js-box01';
-    await page.evaluate(selector => {
-      const { Sticky } = StuckJs;
-      const element = document.querySelector(selector);
-      const sticky = new Sticky(element);
-    }, target);
+  const target = '#js-box01';
 
+  it('preserves left position of sticky', async () => {
     await scrollTo(100, viewport.height);
-    const [{ left }] = await getRect(target);
+    const [{ top, left }] = await getRect(target);
+    expect(top).toBe(0);
     expect(left).toBe(-100);
+  });
+
+  describe('DOM mutations', () => {
+    it('adds stuck data attribute on created', async () => {
+      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      expect(stuck).toBeDefined();
+    });
+
+    it('turns stuck-attr to be "true" string while being sticky', async () => {
+      await scrollTo(0, viewport.height);
+      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      expect(stuck).toBe('true');
+    });
+
+    it('turns stuck-attr to be empty string while no-sticky state', async () => {
+      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      expect(stuck).toBe('');
+    });
   });
 });

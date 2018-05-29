@@ -5,10 +5,11 @@
   "main": "./src/index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack --config ./webpack.config.development.js --progress --colors --watch",
-    "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress && cp ./lib/index.js ./docs",
+    "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress",
     "build:watch": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress --watch",
     "flow": "flow",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "author": "Ryonkmr",
   "keywords": [
@@ -16,6 +17,14 @@
     "scroll",
     "fixed"
   ],
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/RyoNkmr/stuck-js.git"
+  },
+  "bugs": {
+    "url" : "https://github.com/RyoNkmr/stuck-js/issues"
+  },
+  "homepage": "https://ryonkmr.github.io/stuck-js/",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",

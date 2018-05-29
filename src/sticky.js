@@ -31,6 +31,7 @@ export default class Sticky {
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
     this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : '';
+    this.element.dataset.stuck = value || '';
     if (value) {
       this.computePositionTopFromRect();
     }
@@ -81,6 +82,7 @@ export default class Sticky {
     this.marginTop = this.options.marginTop;
     this.wrapper = this.options.wrapper;
     this.placeholder = new Placeholder(element, this.options.placehold, true, Sticky.bulkUpdate);
+    this.element.dataset.stuck = '';
     Sticky.register(this);
 
     if (activate) {

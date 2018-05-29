@@ -1,7 +1,8 @@
 html, body {
+  font-family: 'Oxygen Mono', monospace;
   margin: 0;
   padding: 0;
-  background-color: #efeffe;
+  background-color: #fafafe;
 }
 
 p, ul, h1, h2, h3 {
@@ -25,6 +26,9 @@ a {
     background-color: #017;
   }
 
+p a {
+  text-decoration: underline;
+}
 
 .contents {
   width: 1140px;
@@ -89,7 +93,7 @@ a {
 
 /* main */
 main {
-  background-color: #038;
+  background-image: linear-gradient(#28f, #038);
   color: #efeffe;
   min-width: 1140px;
 }
@@ -153,15 +157,37 @@ main code:nth-child(n+2) {
 }
 
 code {
-  white-space: pre-line;
-  background-color: #ddddf9;
+  position: relative;
+  white-space: pre;
+  background-color: rgba(255,255,255, .7);
   color: #038;
-  padding: 16px;
+  padding: 8px;
   display: block;
   border-radius: 4px;
+  overflow: hidden;
 }
 
-code::before {
+code[data-type] {
+  padding-left: 48px;
+}
+
+code[data-type]::after {
+  position: absolute;
+  display: flex;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  box-sizing: border-box;
+  border-right: 1px solid #038;
+  content: attr(data-type);
+  font-size: .5em;
+  padding: 2px 8px 0;
+  opacity: .5;
+}
+code[data-type="bash"]::before {
   content: '$';
   margin-right: .5em;
 }
