@@ -1,7 +1,7 @@
 const path = require('path');
 const CompressionPlugin = require("compression-webpack-plugin");
 
-module.exports = {
+const prodBuild = {
   mode: 'production',
   entry: {
     index: './src/index.js',
@@ -58,3 +58,17 @@ module.exports = {
     new CompressionPlugin(),
   ],
 };
+
+const docBuild = {
+  ...prodBuild,
+  output: {
+    ...prodBuild.output,
+    path: path.resolve(__dirname, 'docs'),
+  },
+  plugins: [],
+};
+
+module.exports = [
+  docBuild,
+  prodBuild,
+];

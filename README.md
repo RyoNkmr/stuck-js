@@ -34,7 +34,7 @@ Demo: https://ryonkmr.github.io/stuck-js/
   </div>
   <script src="lib/stuck.js"></script>
   <script>
-  const Stuck = StuckJs.StuckJs
+  const Stuck = StuckJs.Stuck;
   const instances = new Stuck([
     { selector: '#js-header', marginTop: 0 },
     { selector: '.js-sticky-ad', wrapper: '#js-sidebar' },

@@ -31,7 +31,7 @@ describe('Sticky', () => {
         height: 300px;
         background-color: #33a;
       }
-      .box.box--large {
+      .box--large {
         height: 600px;
         background-color: #a3a;
       }
@@ -42,11 +42,6 @@ describe('Sticky', () => {
       }
     `});
     await page.addScriptTag({ path: 'lib/index.js' });
-  }, 10000);
-
-  const target = '#js-box01';
-
-  beforeEach(async () => {
     await page.evaluate(selector => {
       const { Sticky } = StuckJs;
       const element = document.querySelector(selector);
@@ -54,15 +49,16 @@ describe('Sticky', () => {
     }, target);
   }, 10000);
 
-  it('makes sticky', async () => {
-    await scrollTo(0, viewport.height);
-    const [{ top }] = await getRect(target);
-    expect(top).toBe(0);
+  afterEach(async () => {
+    await scrollTo(0, 0);
   });
+
+  const target = '#js-box01';
 
   it('preserves left position of sticky', async () => {
     await scrollTo(100, viewport.height);
-    const [{ left }] = await getRect(target);
+    const [{ top, left }] = await getRect(target);
+    expect(top).toBe(0);
     expect(left).toBe(-100);
   });
 
@@ -79,7 +75,6 @@ describe('Sticky', () => {
     });
 
     it('turns stuck-attr to be empty string while no-sticky state', async () => {
-      await scrollTo(0, 200);
       const stuck = await page.$eval(target, el => el.dataset.stuck)
       expect(stuck).toBe('');
     });

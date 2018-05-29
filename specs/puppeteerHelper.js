@@ -1,28 +1,13 @@
-export const scrollTo = (
+export const scrollTo = async (
   scrollLeft = 0, 
   scrollTop = 0, 
-  moveLeft = Math.max(32, scrollLeft/2),
-  moveTop= Math.max(32, scrollTop/2),
-) => (
-  page.evaluate((left, top, moveX, moveY) => new Promise(resolve => {
-    let id;
-    const checker = () => {
-      if (window.scrollX >= left && window.scrollY >= top) {
-        resolve();
-      }
+  moveLeft = 32,
+  moveTop = moveLeft,
+) => {
+  await page.evaluate((left, top) => { window.scroll(left, top); }, scrollLeft, scrollTop);
+  await page.waitFor(60);
+};
 
-      if (window.scrollX < left) {
-        window.scrollBy(moveX, 0);
-      }
-
-      if (window.scrollY < top) {
-        window.scrollBy(0, moveY);
-      }
-      id = window.requestAnimationFrame(checker);
-    }
-    checker();
-  }), scrollLeft, scrollTop, moveLeft, moveTop)
-);
 export const getRect = (...selectors) => (
   page.evaluate(targetSelectors => (
     targetSelectors
