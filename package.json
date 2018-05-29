@@ -1,6 +1,6 @@
 {
   "name": "stuck-js",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)",
   "main": "./src/index.js",
   "scripts": {
@@ -18,11 +18,11 @@
     "fixed"
   ],
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/RyoNkmr/stuck-js.git"
+    "type": "git",
+    "url": "https://github.com/RyoNkmr/stuck-js.git"
   },
   "bugs": {
-    "url" : "https://github.com/RyoNkmr/stuck-js/issues"
+    "url": "https://github.com/RyoNkmr/stuck-js/issues"
   },
   "homepage": "https://ryonkmr.github.io/stuck-js/",
   "license": "MIT",
