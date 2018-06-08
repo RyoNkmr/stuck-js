@@ -93,7 +93,7 @@ describe('Stuck', () => {
         const { Stuck } = StuckJs;
         const stuck = new Stuck([
           { selector: '#js-box00' },
-          { selector: '#js-box02', placehold: 0 },
+          { selector: '#js-box02', placehold: false },
           { selector: '#js-box03' },
         ]);
       });
