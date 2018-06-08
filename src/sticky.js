@@ -28,10 +28,10 @@ export default class Sticky {
   }
 
   set isSticky(value: boolean): boolean {
+    this.element.dataset.stuck = value ? value.toString() : '';
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
     this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : '';
-    this.element.dataset.stuck = value || '';
     if (value) {
       this.computePositionTopFromRect();
     }
