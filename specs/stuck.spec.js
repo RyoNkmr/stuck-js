@@ -10,7 +10,8 @@ describe('Stuck', () => {
       <div id="container">
         <div id="js-box00" class="box js-box" style="z-index: 3">box00</div>
         <div id="js-box01" class="box box--large" style="z-index: 2">box01</div>
-        <div id="js-box02" class="box js-box" style="z-index: 1">box02</div>
+        <div id="js-box02" class="box box--initially-hidden">box02</div>
+        <div id="js-box03" class="box js-box" style="z-index: 1">box03</div>
       </div>
       <footer>
         footer
@@ -36,6 +37,13 @@ describe('Stuck', () => {
         height: 400px;
         background-color: #a3a;
       }
+      .box.box--initially-hidden {
+        display: none;
+        margin-top: 0;
+      }
+      .box.box--initially-hidden[data-stuck='true'] {
+        display: block;
+      }
       footer {
         margin: 0;
         padding: 0;
@@ -56,11 +64,11 @@ describe('Stuck', () => {
         const stuck = new Stuck([
           { selector: '#js-box00' },
           { selector: '#js-box01' },
-          { selector: '#js-box02' },
+          { selector: '#js-box03' },
         ]);
       });
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box01', '#js-box02');
+      const rects = await getRect('#js-box00', '#js-box01', '#js-box03');
       const result = rects.map(el => el.top);
       expect(result).toEqual([0, 250, 650]);
     });
@@ -71,51 +79,66 @@ describe('Stuck', () => {
         const stuck = new Stuck([
           { selector: '#js-box00', marginTop: 20 },
           { selector: '#js-box01' },
-          { selector: '#js-box02', marginTop: 100 },
+          { selector: '#js-box03', marginTop: 100 },
         ], { marginTop: 10 });
       });
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box01', '#js-box02');
+      const rects = await getRect('#js-box00', '#js-box01', '#js-box03');
       const result = rects.map(el => el.top);
       expect(result).toEqual([20, 280, 780]);
     });
+
+    test('with element initially hidden', async () => {
+      await page.evaluate(() => {
+        const { Stuck } = StuckJs;
+        const stuck = new Stuck([
+          { selector: '#js-box00' },
+          { selector: '#js-box02', placehold: 0 },
+          { selector: '#js-box03' },
+        ]);
+      });
+      await scrollTo(0, viewport.height);
+      const rects = await getRect('#js-box00', '#js-box02', '#js-box03');
+      const result = rects.map(el => el.top);
+      expect(result).toEqual([0, 250, 500]);
+    })
   });
 
   describe('Sticky instance creation', () => {
     describe('when Stuck instance is constructed', () => {
       it('create an Sticky instance', async () => {
-        const stuck = await page.evaluate(() => (
-          new StuckJs.Stuck({ selector: '#js-box01' })
+        const instanceLength = await page.evaluate(() => (
+          new StuckJs.Stuck({ selector: '#js-box01' }).instances.length
         ));
-        expect(stuck.instances).toHaveLength(1);
+        expect(instanceLength).toBe(1);
       });
 
       it('creates multiple Stickes at once', async () => {
-        const stuck = await page.evaluate(() => (
-          new StuckJs.Stuck({ selector: '.js-box' })
+        const instanceLength = await page.evaluate(() => (
+          new StuckJs.Stuck({ selector: '.js-box' }).instances.length
         ));
-        expect(stuck.instances).toHaveLength(2);
+        expect(instanceLength).toBe(2);
       });
 
       it('creates Stickies by multiple settings', async () => {
-        const stuck = await page.evaluate(() => (
+        const instanceLength = await page.evaluate(() => (
           new StuckJs.Stuck([
             { selector: '#js-box01' },
             { selector: '.js-box' },
-          ])
+          ]).instances.length
         ));
-        expect(stuck.instances).toHaveLength(3);
+        expect(instanceLength).toBe(3);
       });
     });
 
     describe('after constructed(lazy registration)', () => {
       it('registers new Stickies', async () => {
-        const stuck = await page.evaluate(() => {
+        const instanceLength = await page.evaluate(() => {
           const _stuck = new StuckJs.Stuck({ selector: '#js-box01' })
           _stuck.create({ selector: '.js-box' })
-          return _stuck;
+          return _stuck.instances.length;
         });
-        expect(stuck.instances).toHaveLength(3);
+        expect(instanceLength).toBe(3);
       });
     });
   });
@@ -138,7 +161,7 @@ describe('Stuck', () => {
       const targetIndex = await page.evaluate(() => {
         const { Stuck } = StuckJs;
         const stuck = new Stuck([
-          { selector: '#js-box02' },
+          { selector: '#js-box03' },
           { selector: '#js-box00' }
         ]);
         stuck.create({ selector: '#js-box01' });
