@@ -2,11 +2,20 @@
 
 [![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=svg)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
 
-A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)
+A sticky library handles stack of stickies without dependencies(like jQuery)
 Demo: https://ryonkmr.github.io/stuck-js/
 
 ## Quickstart
+### Setup
 
+you can download from [npm](https://www.npmjs.com/package/stuck-js):
+```bash
+$ npm i -S stuck-js
+```
+
+or [github releases](https://github.com/RyoNkmr/stuck-js/releases).
+
+### Code
 ```html
 <style>
   header {
