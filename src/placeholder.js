@@ -37,7 +37,14 @@ export default class Placeholder {
   }
 
   updateRect(): ClientRect {
+    const initiallyHidden = window.getComputedStyle(this.original).display === 'none';
+    if (initiallyHidden) {
+      this.original.dataset.stuck = 'true';
+    }
     this.cachedRect = this.element.getBoundingClientRect();
+    if (initiallyHidden) {
+      this.original.dataset.stuck = '';
+    }
     return this.cachedRect;
   }
 

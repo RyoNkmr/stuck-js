@@ -9,3 +9,4 @@ jest-puppeteer.config.js
 node_modules
 specs
 webpack.config.*.js
+.vscode
