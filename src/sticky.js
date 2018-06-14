@@ -54,6 +54,11 @@ export default class Sticky {
     return this.$$floor || 0;
   }
 
+  set floor(value: number): number {
+    this.$$floor = value;
+    return value;
+  }
+
   get wrapper(): HTMLElement {
     return this.$$wrapper;
   }
@@ -63,7 +68,7 @@ export default class Sticky {
       throw new Error('[Stuck.js] document.body is not HTMLElement in this environment');
     }
     this.$$wrapper = Sticky.normalizeElement(value, document.body);
-    this.$$floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
+    this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
     return this.$$wrapper;
   }
@@ -159,6 +164,9 @@ export default class Sticky {
   }
 
   computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
+    if (this.options.wrapper instanceof HTMLElement) {
+      this.floor = Sticky.computeAbsoluteFloor(this.options.wrapper);
+    }
     const relativeFloor = this.floor - global.pageYOffset;
     if (rect.bottom > relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - rect.height;
