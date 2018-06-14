@@ -27,7 +27,7 @@ export default class Sticky {
     return this.element !== null && this.element.style.position === 'fixed';
   }
 
-  set isSticky(value: boolean): boolean {
+  set isSticky(value: boolean): void {
     this.element.dataset.stuck = value ? value.toString() : '';
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
@@ -35,7 +35,6 @@ export default class Sticky {
     if (value) {
       this.computePositionTopFromRect();
     }
-    return value;
   }
 
   get top(): number {
@@ -44,33 +43,30 @@ export default class Sticky {
       : this.marginTop;
   }
 
-  set top(value: ?number): ?number {
+  set top(value: ?number): void {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
-    return value;
   }
 
   get floor(): number {
     return this.$$floor || 0;
   }
 
-  set floor(value: number): number {
+  set floor(value: number): void {
     this.$$floor = value;
-    return value;
   }
 
   get wrapper(): HTMLElement {
     return this.$$wrapper;
   }
 
-  set wrapper(value: HTMLElement|string): HTMLElement {
+  set wrapper(value: HTMLElement|string): void {
     if (document.body === null) {
       throw new Error('[Stuck.js] document.body is not HTMLElement in this environment');
     }
     this.$$wrapper = Sticky.normalizeElement(value, document.body);
     this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
-    return this.$$wrapper;
   }
 
   constructor(
