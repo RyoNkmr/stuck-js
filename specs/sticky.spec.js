@@ -48,7 +48,7 @@ describe('Sticky', () => {
       const element = document.querySelector(selector);
       const sticky = new Sticky(element);
     }, target);
-  });
+  }, 10000);
 
   afterEach(async () => {
     await scrollTo(0, 0);
