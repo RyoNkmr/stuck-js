@@ -43,7 +43,7 @@ describe('Sticky', () => {
       }
     `});
     await page.addScriptTag({ path: 'lib/index.js' });
-    await page.evaluate((selector) => {
+    await page.evaluate(selector => {
       const { Sticky } = StuckJs;
       const element = document.querySelector(selector);
       const sticky = new Sticky(element);

@@ -149,7 +149,7 @@ export default class Sticky {
   static bulkPlaceholderUpdate(): void {
     window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
     Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
-      Sticky.instances.forEach((instance) => {
+      Sticky.instances.forEach(instance => {
         instance.placeholder.update();
         instance.update();
       });
