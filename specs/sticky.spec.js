@@ -3,6 +3,7 @@ import { scrollTo, getRect } from './puppeteerHelper';
 describe('Sticky', () => {
   const containerWidth = 2000;
   const containerHeight = 3000;
+  const target = '#js-box01';
   let viewport;
 
   beforeEach(async () => {
@@ -42,7 +43,7 @@ describe('Sticky', () => {
       }
     `});
     await page.addScriptTag({ path: 'lib/index.js' });
-    await page.evaluate(selector => {
+    await page.evaluate((selector) => {
       const { Sticky } = StuckJs;
       const element = document.querySelector(selector);
       const sticky = new Sticky(element);
@@ -53,8 +54,6 @@ describe('Sticky', () => {
     await scrollTo(0, 0);
   });
 
-  const target = '#js-box01';
-
   it('preserves left position of sticky', async () => {
     await scrollTo(100, viewport.height);
     const [{ top, left }] = await getRect(target);
@@ -64,18 +63,18 @@ describe('Sticky', () => {
 
   describe('DOM mutations', () => {
     it('adds stuck data attribute on created', async () => {
-      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      const stuck = await page.$eval(target, el => el.dataset.stuck);
       expect(stuck).toBeDefined();
     });
 
     it('turns stuck-attr to be "true" string while being sticky', async () => {
       await scrollTo(0, viewport.height);
-      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      const stuck = await page.$eval(target, el => el.dataset.stuck);
       expect(stuck).toBe('true');
     });
 
     it('turns stuck-attr to be empty string while no-sticky state', async () => {
-      const stuck = await page.$eval(target, el => el.dataset.stuck)
+      const stuck = await page.$eval(target, el => el.dataset.stuck);
       expect(stuck).toBe('');
     });
   });
