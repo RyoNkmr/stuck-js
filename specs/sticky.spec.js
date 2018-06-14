@@ -10,9 +10,9 @@ describe('Sticky', () => {
     viewport = await page.viewport();
     await page.setContent(`
       <div id="container">
-        <div id="js-box00" class="box js-box">box00</div>
+        <div id="js-box00" class="box">box00</div>
         <div id="js-box01" class="box box--large">box01</div>
-        <div id="js-box02" class="box js-box">box02</div>
+        <div id="js-box02" class="box">box02</div>
       </div>
       <footer>
         footer
@@ -48,7 +48,7 @@ describe('Sticky', () => {
       const element = document.querySelector(selector);
       const sticky = new Sticky(element);
     }, target);
-  }, 10000);
+  });
 
   afterEach(async () => {
     await scrollTo(0, 0);
