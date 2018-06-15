@@ -9,6 +9,7 @@ module.exports = {
     'flowtype',
   ],
   rules: {
+    'arrow-parens': ['error', 'as-needed'],
     'flowtype/define-flow-type': 1,
     'flowtype/use-flow-type': 1,
     'no-param-reassign': ['error', { props: false }],
