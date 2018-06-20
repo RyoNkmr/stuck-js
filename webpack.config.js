@@ -61,10 +61,12 @@ const prodBuild = {
 
 const docBuild = {
   ...prodBuild,
+  mode: 'development',
   output: {
     ...prodBuild.output,
     path: path.resolve(__dirname, 'docs'),
   },
+  devtool: 'inline-source-map',
   plugins: [],
 };
 

@@ -4,10 +4,9 @@
   "description": "A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)",
   "main": "./lib/index.js",
   "scripts": {
-    "start": "npm run dev",
-    "dev": "NODE_ENV=development webpack --config ./webpack.config.development.js --progress --colors --watch",
-    "build": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress",
-    "build:watch": "NODE_ENV=production webpack --config ./webpack.config.production.js --progress --watch",
+    "start": "npm run watch",
+    "watch": "NODE_ENV=production webpack --config ./webpack.config.js --progress --colors --watch",
+    "build": "NODE_ENV=production webpack --config ./webpack.config.js --progress",
     "flow": "flow",
     "test": "jest",
     "test:watch": "jest --watch"
