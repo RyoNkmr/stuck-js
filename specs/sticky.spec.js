@@ -1,13 +1,12 @@
-import { scrollTo, getRect } from './puppeteerHelper';
+import { scrollTo, getRects, getParentRects } from './puppeteerHelper';
 
 describe('Sticky', () => {
   const containerWidth = 2000;
   const containerHeight = 3000;
   const target = '#js-box01';
-  let viewport;
+  const viewport = { width: 800, height: 600 };
 
   beforeEach(async () => {
-    viewport = await page.viewport();
     await page.setContent(`
       <div id="container">
         <div id="js-box00" class="box">box00</div>
@@ -32,6 +31,9 @@ describe('Sticky', () => {
         height: 300px;
         background-color: #33a;
       }
+      .fullwidth {
+        width: 100%;
+      }
       .box--large {
         height: 600px;
         background-color: #a3a;
@@ -52,12 +54,13 @@ describe('Sticky', () => {
 
   afterEach(async () => {
     await scrollTo(0, 0);
+    await page.setViewport(viewport);
     await page.reload();
   });
 
   it('preserves left position of sticky', async () => {
     await scrollTo(100, viewport.height);
-    const [{ top, left }] = await getRect(target);
+    const [{ top, left }] = await getRects(target);
     expect(top).toBe(0);
     expect(left).toBe(-100);
   });
@@ -80,10 +83,58 @@ describe('Sticky', () => {
     });
   });
 
+  describe('placeholder', () => {
+    beforeEach(async () => {
+      await page.reload();
+      await page.setContent(`
+        <header>header</header>
+        <main></main>
+      `);
+      await page.addStyleTag({
+        content: `
+          html, body {
+            margin: 0;
+            padding: 0;
+          }
+          main {
+            display: block;
+            height: 3000px;
+          }
+          header {
+            width: 100%;
+            height: 80px;
+            background-color: #a3a;
+          }
+        `,
+      });
+      await page.addScriptTag({ path: 'lib/index.js' });
+    }, 10000);
+
+    it('update sticky and placeholder size on resize', async () => {
+      await page.evaluate(() => {
+        const { Sticky } = StuckJs;
+        const element = document.querySelector('header');
+        const sticky = new Sticky(element);
+      });
+      await scrollTo(0, 1000);
+      const viewportWidth = page.viewport().width;
+      const [stickyRect] = await getRects('header');
+      const [placeholderRect] = await getParentRects('header');
+      expect(viewportWidth).toBe(800);
+      expect(stickyRect.width).toBe(800);
+      expect(placeholderRect.width).toBe(800);
+
+      await page.setViewport({ ...viewport, width: 400 });
+      const [stickyRectAfterResized] = await getRects('header');
+      const [placeholderRectAfterResized] = await getParentRects('header');
+      expect(stickyRectAfterResized.width).toBe(400);
+      expect(placeholderRectAfterResized.width).toBe(400);
+    });
+  });
+
   describe('position sticking inside the wrapper', () => {
     beforeEach(async () => {
       await page.reload();
-      viewport = await page.viewport();
       await page.setContent(`
         <div id="container">
           <div id="sidebar">
@@ -139,7 +190,7 @@ describe('Sticky', () => {
         const sticky = new Sticky(element, { wrapper: '#sidebar' });
       });
       await scrollTo(0, 2400);
-      const [rect] = await getRect('#js-box01');
+      const [rect] = await getRects('#js-box01');
       expect(rect.top).toBe(-400);
     });
 
@@ -155,7 +206,7 @@ describe('Sticky', () => {
         element.style.height = '3600px';
       });
       await scrollTo(0, 3400);
-      const [rect] = await getRect('#js-box01');
+      const [rect] = await getRects('#js-box01');
       expect(rect.top).toBe(-400);
     });
   });
