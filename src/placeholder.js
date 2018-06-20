@@ -81,12 +81,11 @@ export default class Placeholder {
   }
 
   updateRect(): ClientRect {
-    const state = this.original.dataset.stuck;
-    if (this.initiallyHidden) {
-      this.original.dataset.stuck = 'true';
-    }
     this.cachedRect = this.element.getBoundingClientRect();
     if (this.initiallyHidden) {
+      const state = this.original.dataset.stuck;
+      this.original.dataset.stuck = 'true';
+      this.cachedRect = this.element.getBoundingClientRect();
       this.original.dataset.stuck = state;
     }
     return this.cachedRect;
