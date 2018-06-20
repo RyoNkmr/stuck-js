@@ -97,10 +97,14 @@ describe('Stuck', () => {
           { selector: '#js-box03' },
         ]);
       });
+      const rectsBeforeScroll = await getRect('#js-box00', '#js-box02', '#js-box03')
+        .then(rects => rects.map(el => el.top));
+      expect(rectsBeforeScroll).toEqual([0, 0, 710]);
+
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box02', '#js-box03');
-      const result = rects.map(el => el.top);
-      expect(result).toEqual([0, 250, 500]);
+      const rectsAfterScroll = await getRect('#js-box00', '#js-box02', '#js-box03')
+        .then(rects => rects.map(el => el.top));
+      expect(rectsAfterScroll).toEqual([0, 250, 500]);
     })
   });
 
