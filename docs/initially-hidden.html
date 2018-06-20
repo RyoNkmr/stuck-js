@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="">
+    <title></title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+      #container {
+        height: 3000px;
+      }
+      .box {
+        width: 300px;
+        height: 250px;
+        background-color: #33a;
+      }
+      .box:nth-child(n+2) {
+        margin-top: 30px;
+      }
+      .box.box--large {
+        height: 400px;
+        background-color: #a3a;
+      }
+      .box.box--initially-hidden {
+        display: none;
+        margin-top: 0;
+      }
+      .box.box--initially-hidden[data-stuck='true'] {
+        display: block;
+      }
+      footer {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="js-box00" class="box js-box" style="z-index: 3">box00</div>
+      <div id="js-box01" class="box box--large" style="z-index: 2">box01</div>
+      <div id="js-box02" class="box box--initially-hidden" style="z-index: 1">box02</div>
+      <div id="js-box03" class="box js-box" style="z-index: 0">box03</div>
+    </div>
+    <footer>
+      footer
+    </footer>
+    <script src="./index.js"></script>
+    <script>
+      const { Stuck } = StuckJs;
+      const stuck = new Stuck([
+        { selector: '#js-box00' },
+        { selector: '#js-box02', placehold: false },
+        { selector: '#js-box03' },
+      ]);
+    </script>
+  </body>
+</html>
