@@ -94,6 +94,9 @@ export default class Sticky {
     activate: boolean = true,
     onUpdate: () => mixed = () => {},
   ) {
+    if (!element) {
+      throw new Error('[Stuck-js] Invalid element given');
+    }
     this.element = element;
     this.options = {
       marginTop: 0,
