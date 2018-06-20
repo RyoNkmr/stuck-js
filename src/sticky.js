@@ -19,10 +19,25 @@ export default class Sticky {
   $$wrapper: HTMLElement;
   $$floor: number;
   $$additionalTop: ?number;
+  $$rect: ?ClientRect;
 
   static instances: Stickies = [];
   static activated: boolean = false;
   static bulkUpdateRequestId: ?number = null;
+
+  get rect(): ClientRect {
+    if (!this.$$rect) {
+      const state = this.isSticky;
+      this.isSticky = true;
+      this.$$rect = this.element.getBoundingClientRect();
+      this.isSticky = state;
+    }
+    return this.$$rect;
+  }
+
+  set rect(value: ?ClientRect): void {
+    this.$$rect = value;
+  }
 
   get isSticky() {
     return this.element !== null && this.element.style.position === 'fixed';
@@ -173,23 +188,24 @@ export default class Sticky {
   }
 
   computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
+    this.rect = rect;
     if (this.options.wrapper instanceof HTMLElement) {
       this.floor = Sticky.computeAbsoluteFloor(this.options.wrapper);
     }
     const relativeFloor = this.floor - global.pageYOffset;
-    if (rect.bottom > relativeFloor && !this.isStickToBottom) {
-      this.top = relativeFloor - rect.height;
+    if (this.rect.bottom > relativeFloor && !this.isStickToBottom) {
+      this.top = relativeFloor - this.rect.height;
       this.isStickToBottom = true;
       return;
     }
 
     if (this.isStickToBottom) {
-      if (rect.top === this.marginTop) {
+      if (this.rect.top === this.marginTop) {
         this.isStickToBottom = false;
         return;
       }
-      if (rect.top < this.marginTop) {
-        this.top = relativeFloor - rect.height;
+      if (this.rect.top < this.marginTop) {
+        this.top = relativeFloor - this.rect.height;
         return;
       }
     }
@@ -211,12 +227,12 @@ export default class Sticky {
         return;
       }
 
-      const rect = this.element.getBoundingClientRect();
-      if (rect.left !== placeholderRect.left) {
+      this.rect = this.element.getBoundingClientRect();
+      if (this.rect.left !== placeholderRect.left) {
         this.element.style.left = `${placeholderRect.left}px`;
       }
 
-      this.computePositionTopFromRect(rect);
+      this.computePositionTopFromRect(this.rect);
     }
   }
 }

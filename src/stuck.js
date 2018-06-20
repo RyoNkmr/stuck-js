@@ -84,9 +84,9 @@ export default class Stuck {
         rect: instance.placeholder.updateRect(),
       }))
       .sort(({ rect: before }, { rect: after }) => before.top - after.top)
-      .reduce((ceiling, { instance, rect }) => {
+      .reduce((ceiling, { instance }) => {
         instance.marginTop = instance.options.marginTop + ceiling;
-        return rect.height + instance.marginTop;
+        return instance.rect.height + instance.marginTop;
       }, 0);
     Sticky.bulkUpdate();
   }
