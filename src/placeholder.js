@@ -5,6 +5,22 @@ export default class Placeholder {
   cachedRect: ClientRect;
   observer: MutationObserver;
   onUpdate: () => mixed;
+  initialComputedStyles: ?CSSStyleDeclaration;
+  initiallyHidden: ?boolean;
+  $$shouldPlacehold: boolean;
+
+  get shouldPlacehold(): boolean {
+    return this.$$shouldPlacehold;
+  }
+
+  set shouldPlacehold(value: boolean): void {
+    if (this.shouldPlacehold === value) {
+      return;
+    }
+
+    this.$$shouldPlacehold = value;
+    this.update(true);
+  }
 
   constructor(
     element: HTMLElement,
@@ -12,16 +28,44 @@ export default class Placeholder {
     observe: boolean = true,
     onUpdate: () => mixed = () => {},
   ) {
+    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : () => {};
+
     this.original = element;
-    this.element = Placeholder.createPlaceholder(element, placehold);
+    this.updateInitialComputedStyles();
+    this.element = Placeholder.createPlaceholder();
+    this.refrectInitialStyles();
+    this.cachedRect = this.element && this.updateRect();
+    this.shouldPlacehold = placehold;
 
     Placeholder.wrap(this.original, this.element);
-    this.cachedRect = this.element && this.element.getBoundingClientRect();
-    this.onUpdate = onUpdate;
 
-    if (placehold && observe) {
+    if (observe) {
       this.observer = Placeholder.createObserver(this.original, () => this.update());
     }
+  }
+
+  updateInitialComputedStyles() {
+    if (this.initialComputedStyles) {
+      throw new Error('[Stuck.js] updateInitialComputedStyles should not be called more than once.');
+    }
+    this.initialComputedStyles = window.getComputedStyle(this.original);
+    this.initiallyHidden = this.initialComputedStyles.display === 'none';
+
+    if (this.initiallyHidden) {
+      const state = this.original.dataset.stuck;
+      this.original.dataset.stuck = 'true';
+      this.initialComputedStyles = window.getComputedStyle(this.original);
+      this.original.dataset.stuck = state;
+    }
+  }
+
+  refrectInitialStyles(): void {
+    if (!this.initialComputedStyles) {
+      return;
+    }
+    this.element.style.margin = this.initialComputedStyles.margin;
+    this.element.style.minWidth = this.initialComputedStyles.minWidth;
+    this.element.style.minHeight = this.initialComputedStyles.minHeight;
   }
 
   destroy(): void {
@@ -37,36 +81,54 @@ export default class Placeholder {
   }
 
   updateRect(): ClientRect {
-    const initiallyHidden = window.getComputedStyle(this.original).display === 'none';
-    if (initiallyHidden) {
+    const state = this.original.dataset.stuck;
+    if (this.initiallyHidden) {
       this.original.dataset.stuck = 'true';
     }
     this.cachedRect = this.element.getBoundingClientRect();
-    if (initiallyHidden) {
-      this.original.dataset.stuck = '';
+    if (this.initiallyHidden) {
+      this.original.dataset.stuck = state;
     }
     return this.cachedRect;
   }
 
-  update(): void {
-    if (!this) return;
+  applyStyles(forceUpdate: boolean = false): void {
+    if (!this.original || !this.element) {
+      return;
+    }
     const originalRect: ClientRect = this.original.getBoundingClientRect();
     const widthChanged = originalRect.width !== this.cachedRect.width;
     const heightChanged = originalRect.height !== this.cachedRect.height;
 
-    if (!widthChanged && !heightChanged) {
+    if (!forceUpdate && !widthChanged && !heightChanged) {
       return;
     }
 
-    if (widthChanged) {
+    if (forceUpdate || widthChanged) {
       this.element.style.width = `${originalRect.width}px`;
     }
 
-    if (heightChanged) {
+    if (forceUpdate || heightChanged) {
       this.element.style.height = `${originalRect.height}px`;
     }
 
-    this.cachedRect = this.element.getBoundingClientRect();
+    this.updateRect();
+  }
+
+  removeStyles(): void {
+    if (!this.original || !this.element) {
+      return;
+    }
+    this.element.style.width = '';
+    this.element.style.height = '';
+  }
+
+  update(forceUpdate: boolean = false): void {
+    if (this.shouldPlacehold) {
+      this.applyStyles(forceUpdate);
+    } else {
+      this.removeStyles();
+    }
     this.onUpdate();
   }
 
@@ -117,18 +179,7 @@ export default class Placeholder {
     return wrapper;
   }
 
-  static createPlaceholder(element: HTMLElement, placehold: boolean = true): HTMLElement {
-    const placeholder: HTMLElement = document.createElement('div');
-
-    if (placehold) {
-      const computedStyles: CSSStyleDeclaration = window.getComputedStyle(element);
-      const originalRect: ClientRect = element.getBoundingClientRect();
-
-      placeholder.style.margin = computedStyles.margin;
-      placeholder.style.width = `${originalRect.width}px`;
-      placeholder.style.height = `${originalRect.height}px`;
-    }
-
-    return placeholder;
+  static createPlaceholder(): HTMLElement {
+    return document.createElement('div');
   }
 }
