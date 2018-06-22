@@ -15,29 +15,15 @@ export default class Sticky {
   marginTop: number = 0;
   isSticky: ?boolean;
   isStickToBottom: ?boolean = false;
+  rect: ?ClientRect;
   // private
   $$wrapper: HTMLElement;
   $$floor: number;
   $$additionalTop: ?number;
-  $$rect: ?ClientRect;
 
   static instances: Stickies = [];
   static activated: boolean = false;
   static bulkUpdateRequestId: ?number = null;
-
-  get rect(): ClientRect {
-    if (!this.$$rect) {
-      const state = this.isSticky;
-      this.isSticky = true;
-      this.$$rect = this.element.getBoundingClientRect();
-      this.isSticky = state;
-    }
-    return this.$$rect;
-  }
-
-  set rect(value: ?ClientRect): void {
-    this.$$rect = value;
-  }
 
   get isSticky() {
     return this.element !== null && this.element.style.position === 'fixed';
@@ -98,6 +84,7 @@ export default class Sticky {
       throw new Error('[Stuck-js] Invalid element given');
     }
     this.element = element;
+    this.rect = this.element.getBoundingClientRect();
     this.options = {
       marginTop: 0,
       placehold: true,
