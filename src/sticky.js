@@ -13,19 +13,18 @@ export default class Sticky {
   options: StickyOptions;
   placeholder: Placeholder;
   marginTop: number = 0;
-  isSticky: ?boolean;
   isStickToBottom: ?boolean = false;
-  rect: ?ClientRect;
+  rect: ClientRect;
+  floor: number;
   // private
   $$wrapper: HTMLElement;
-  $$floor: number;
   $$additionalTop: ?number;
 
   static instances: Stickies = [];
   static activated: boolean = false;
   static bulkUpdateRequestId: ?number = null;
 
-  get isSticky() {
+  get isSticky(): boolean {
     return this.element !== null && this.element.style.position === 'fixed';
   }
 
@@ -51,14 +50,6 @@ export default class Sticky {
   set top(value: ?number): void {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
-  }
-
-  get floor(): number {
-    return this.$$floor || 0;
-  }
-
-  set floor(value: number): void {
-    this.$$floor = value;
   }
 
   get wrapper(): HTMLElement {
@@ -182,7 +173,7 @@ export default class Sticky {
     if (this.options.wrapper instanceof HTMLElement) {
       this.floor = Sticky.computeAbsoluteFloor(this.options.wrapper);
     }
-    const relativeFloor = this.floor - global.pageYOffset;
+    const relativeFloor = (this.floor || 0) - global.pageYOffset;
     if (this.rect.bottom > relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - this.rect.height;
       this.isStickToBottom = true;

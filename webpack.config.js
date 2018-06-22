@@ -1,4 +1,5 @@
 const path = require('path');
+const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
 const CompressionPlugin = require("compression-webpack-plugin");
 
 const prodBuild = {
@@ -55,6 +56,7 @@ const prodBuild = {
     ],
   },
   plugins: [
+    new FlowBabelWebpackPlugin(),
     new CompressionPlugin(),
   ],
 };
