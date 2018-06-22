@@ -31,9 +31,9 @@ export default class Placeholder {
     this.onUpdate = typeof onUpdate === 'function' ? onUpdate : () => {};
 
     this.original = element;
-    this.updateInitialComputedStyles();
+    this.storeInitialComputedStyles();
     this.element = Placeholder.createPlaceholder();
-    this.refrectInitialStyles();
+    this.applySpacingInitialStyles();
     this.cachedRect = this.element && this.updateRect();
     this.shouldPlacehold = placehold;
 
@@ -44,9 +44,9 @@ export default class Placeholder {
     }
   }
 
-  updateInitialComputedStyles() {
+  storeInitialComputedStyles(): void {
     if (this.initialComputedStyles) {
-      throw new Error('[Stuck.js] updateInitialComputedStyles should not be called more than once.');
+      throw new Error('[Stuck.js] storeInitialComputedStyles should not be called more than once.');
     }
     this.initialComputedStyles = window.getComputedStyle(this.original);
     this.initiallyHidden = this.initialComputedStyles.display === 'none';
@@ -59,7 +59,7 @@ export default class Placeholder {
     }
   }
 
-  refrectInitialStyles(): void {
+  applySpacingInitialStyles(): void {
     if (!this.initialComputedStyles) {
       return;
     }
