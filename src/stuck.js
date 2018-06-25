@@ -30,7 +30,7 @@ export default class Stuck {
     if (registered.length === 0) {
       return [];
     }
-    Stuck.updateAndSort(Stuck.registeredInstances);
+    Stuck.updateAndSort();
     Sticky.activate();
     return registered;
   }
@@ -42,7 +42,7 @@ export default class Stuck {
       return [];
     }
     const stickies = targetElements.map(node => (
-      new Sticky(node, { ...this.defaultOptions, ...options }, false)
+      new Sticky(node, { ...this.defaultOptions, ...options }, false, Stuck.updateAndSort)
     ));
     Stuck.registeredInstances = [...Stuck.registeredInstances, ...stickies];
     this.instances = [...this.instances, ...stickies];
@@ -61,18 +61,17 @@ export default class Stuck {
       !this.instances.includes(stacking)
     ));
     if (Stuck.registeredInstances.length > 0) {
-      Stuck.updateAndSort(Stuck.registeredInstances);
+      Stuck.updateAndSort();
     }
     this.instances.forEach(instance => instance.destroy());
     this.instances = [];
   }
 
-  static updateAndSort(instances: Stickies): Stickies {
+  static updateAndSort(): void {
     Stuck.update();
-    instances.sort((before, after) => (
+    Stuck.registeredInstances.sort((before, after) => (
       before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     ));
-    return instances;
   }
 
   static update(): void {
@@ -85,9 +84,9 @@ export default class Stuck {
         rect: instance.placeholder.updateRect(),
       }))
       .sort(({ rect: before }, { rect: after }) => before.top - after.top)
-      .reduce((ceiling, { instance, rect }) => {
+      .reduce((ceiling, { instance }) => {
         instance.marginTop = instance.options.marginTop + ceiling;
-        return rect.height + instance.marginTop;
+        return instance.rect.height + instance.marginTop;
       }, 0);
     Sticky.bulkUpdate();
   }

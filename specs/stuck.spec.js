@@ -1,4 +1,4 @@
-import { scrollTo, getRect } from './puppeteerHelper';
+import { scrollTo, getRects } from './puppeteerHelper';
 
 describe('Stuck', () => {
   const containerHeight = 3000;
@@ -68,7 +68,7 @@ describe('Stuck', () => {
         ]);
       });
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box01', '#js-box03');
+      const rects = await getRects('#js-box00', '#js-box01', '#js-box03');
       const result = rects.map(el => el.top);
       expect(result).toEqual([0, 250, 650]);
     });
@@ -83,7 +83,7 @@ describe('Stuck', () => {
         ], { marginTop: 10 });
       });
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box01', '#js-box03');
+      const rects = await getRects('#js-box00', '#js-box01', '#js-box03');
       const result = rects.map(el => el.top);
       expect(result).toEqual([20, 280, 780]);
     });
@@ -97,10 +97,14 @@ describe('Stuck', () => {
           { selector: '#js-box03' },
         ]);
       });
+      const rectsBeforeScroll = await getRects('#js-box00', '#js-box02', '#js-box03')
+        .then(rects => rects.map(el => el.top));
+      expect(rectsBeforeScroll).toEqual([0, 0, 710]);
+
       await scrollTo(0, viewport.height);
-      const rects = await getRect('#js-box00', '#js-box02', '#js-box03');
-      const result = rects.map(el => el.top);
-      expect(result).toEqual([0, 250, 500]);
+      const rectsAfterScroll = await getRects('#js-box00', '#js-box02', '#js-box03')
+        .then(rects => rects.map(el => el.top));
+      expect(rectsAfterScroll).toEqual([0, 250, 500]);
     })
   });
 

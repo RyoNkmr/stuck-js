@@ -5,6 +5,7 @@ export type StickyOptions = {
   marginTop?: number,
   wrapper?: HTMLElement|string,
   placehold?: boolean,
+  observe?: boolean,
 };
 
 export default class Sticky {
@@ -12,18 +13,18 @@ export default class Sticky {
   options: StickyOptions;
   placeholder: Placeholder;
   marginTop: number = 0;
-  isSticky: ?boolean;
   isStickToBottom: ?boolean = false;
+  rect: ClientRect;
+  floor: number;
   // private
   $$wrapper: HTMLElement;
-  $$floor: number;
   $$additionalTop: ?number;
 
   static instances: Stickies = [];
   static activated: boolean = false;
   static bulkUpdateRequestId: ?number = null;
 
-  get isSticky() {
+  get isSticky(): boolean {
     return this.element !== null && this.element.style.position === 'fixed';
   }
 
@@ -31,9 +32,12 @@ export default class Sticky {
     this.element.dataset.stuck = value ? value.toString() : '';
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
-    this.element.style.left = value ? `${this.placeholder.element.getBoundingClientRect().left}px` : '';
+    this.element.style.left = value ? `${this.placeholder.updateRect().left}px` : '';
     if (value) {
       this.computePositionTopFromRect();
+    }
+    if (this.placeholder && this.options.placehold) {
+      this.placeholder.shouldPlacehold = value;
     }
   }
 
@@ -46,14 +50,6 @@ export default class Sticky {
   set top(value: ?number): void {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
-  }
-
-  get floor(): number {
-    return this.$$floor || 0;
-  }
-
-  set floor(value: number): void {
-    this.$$floor = value;
   }
 
   get wrapper(): HTMLElement {
@@ -73,22 +69,35 @@ export default class Sticky {
     element: HTMLElement,
     options: StickyOptions = {},
     activate: boolean = true,
+    onUpdate: () => mixed = () => {},
   ) {
+    if (!element) {
+      throw new Error('[Stuck-js] Invalid element given');
+    }
     this.element = element;
+    this.rect = this.element.getBoundingClientRect();
     this.options = {
       marginTop: 0,
       placehold: true,
+      observe: true,
       ...options,
     };
     this.marginTop = this.options.marginTop;
     this.wrapper = this.options.wrapper;
-    this.placeholder = new Placeholder(element, this.options.placehold, true, Sticky.bulkUpdate);
+    this.placeholder = new Placeholder(
+      this.element,
+      this.options.placehold,
+      this.options.observe,
+      onUpdate || Sticky.bulkUpdate,
+    );
     this.element.dataset.stuck = '';
     Sticky.register(this);
 
     if (activate) {
       Sticky.activate();
     }
+
+    this.placeholder.shouldPlacehold = this.isSticky;
   }
 
   static computeAbsoluteFloor(target: HTMLElement): number {
@@ -110,8 +119,8 @@ export default class Sticky {
   }
 
   destroy(): void {
-    this.placeholder.destroy();
     this.isSticky = false;
+    this.placeholder.destroy();
     Sticky.instances = Sticky.instances.filter(instance => instance !== this);
     delete this.placeholder;
     delete this.element;
@@ -160,23 +169,24 @@ export default class Sticky {
   }
 
   computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
+    this.rect = rect;
     if (this.options.wrapper instanceof HTMLElement) {
       this.floor = Sticky.computeAbsoluteFloor(this.options.wrapper);
     }
-    const relativeFloor = this.floor - global.pageYOffset;
-    if (rect.bottom > relativeFloor && !this.isStickToBottom) {
-      this.top = relativeFloor - rect.height;
+    const relativeFloor = (this.floor || 0) - global.pageYOffset;
+    if (this.rect.bottom > relativeFloor && !this.isStickToBottom) {
+      this.top = relativeFloor - this.rect.height;
       this.isStickToBottom = true;
       return;
     }
 
     if (this.isStickToBottom) {
-      if (rect.top === this.marginTop) {
+      if (this.rect.top === this.marginTop) {
         this.isStickToBottom = false;
         return;
       }
-      if (rect.top < this.marginTop) {
-        this.top = relativeFloor - rect.height;
+      if (this.rect.top < this.marginTop) {
+        this.top = relativeFloor - this.rect.height;
         return;
       }
     }
@@ -187,23 +197,23 @@ export default class Sticky {
   update(): void {
     const placeholderRect = this.placeholder.element.getBoundingClientRect();
 
-    if (!this.isSticky && placeholderRect.top <= this.marginTop) {
+    if (!this.isSticky && this.marginTop >= placeholderRect.top) {
       this.isSticky = true;
       return;
     }
 
     if (this.isSticky) {
-      if (placeholderRect.top >= this.marginTop) {
+      if (placeholderRect.top > this.marginTop) {
         this.isSticky = false;
         return;
       }
 
-      const rect = this.element.getBoundingClientRect();
-      if (rect.left !== placeholderRect.left) {
+      this.rect = this.element.getBoundingClientRect();
+      if (this.rect.left !== placeholderRect.left) {
         this.element.style.left = `${placeholderRect.left}px`;
       }
 
-      this.computePositionTopFromRect(rect);
+      this.computePositionTopFromRect(this.rect);
     }
   }
 }

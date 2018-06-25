@@ -10,3 +10,5 @@ node_modules
 specs
 webpack.config.*.js
 .vscode
+coverage
+.nyc_output
