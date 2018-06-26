@@ -63,7 +63,8 @@ export default class Sticky {
     if (!(document.body instanceof HTMLElement)) {
       throw new TypeError('[Stuck.js] document.body is not HTMLElement in this environment');
     }
-    this.$$wrapper = Sticky.normalizeElement(value, this.element.parentElement, document.body);
+    const parent = ((this.placeholder && this.placeholder.element) || this.element).parentElement;
+    this.$$wrapper = Sticky.normalizeElement(value, parent, document.body);
     this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
   }
