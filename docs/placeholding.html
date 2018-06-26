@@ -9,7 +9,7 @@
         padding: 0;
       }
       #container {
-        height: 3000px;
+        display: flex;
       }
       .box {
         width: 300px;
@@ -23,12 +23,9 @@
         height: 400px;
         background-color: #a3a;
       }
-      .box.box--initially-hidden {
-        display: none;
-        margin-top: 0;
-      }
-      .box.box--initially-hidden[data-stuck='true'] {
-        display: block;
+      main {
+        flex: 1;
+        background-color: #bbf;
       }
       footer {
         width: 100%;
@@ -40,12 +37,16 @@
     </style>
   </head>
   <body>
-    <div id="container">
-      <div id="js-box00" class="box js-box" style="z-index: 3">box00</div>
-      <div id="js-box01" class="box box--large" style="z-index: 2">box01</div>
-      <div id="js-box02" class="box box--initially-hidden" style="z-index: 1">box02</div>
-      <div id="js-box03" class="box js-box" style="z-index: 0">box03</div>
-    </div>
+    <section id="container">
+      <main>
+        <p>main contents</p>
+      </main>
+      <aside>
+        <div id="js-box00" class="box js-box" style="z-index: 3">BOX0</div>
+        <div id="js-box01" class="box js-box" style="z-index: 2">BOX1</div>
+        <div id="js-box02" class="box box--large" style="z-index: 1">BOX02</div>
+      </aside>
+    </section>
     <footer>
       footer
     </footer>
@@ -54,9 +55,9 @@
       const { Stuck } = StuckJs;
       const stuck = new Stuck([
         { selector: '#js-box00' },
-        { selector: '#js-box02', placehold: false },
-        { selector: '#js-box03' },
-      ]);
+        { selector: '#js-box01', placehold: false },
+        { selector: '#js-box02' },
+      ], { wrapper: '#container'});
     </script>
   </body>
 </html>

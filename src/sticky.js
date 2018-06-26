@@ -1,11 +1,14 @@
 /* @flow */
 import Placeholder from './placeholder';
 
+type MaybeHTMLElement = HTMLElement|Element|null|void;
+type SelectorOrElement = string|HTMLElement;
+
 export type StickyOptions = {
   marginTop?: number,
-  wrapper?: HTMLElement|string,
-  placehold?: boolean,
-  observe?: boolean,
+  wrapper?: SelectorOrElement,
+  placehold: boolean,
+  observe: boolean,
 };
 
 export default class Sticky {
@@ -56,18 +59,19 @@ export default class Sticky {
     return this.$$wrapper;
   }
 
-  set wrapper(value: HTMLElement|string): void {
-    if (document.body === null) {
-      throw new Error('[Stuck.js] document.body is not HTMLElement in this environment');
+  set wrapper(value: SelectorOrElement): void {
+    if (!(document.body instanceof HTMLElement)) {
+      throw new TypeError('[Stuck.js] document.body is not HTMLElement in this environment');
     }
-    this.$$wrapper = Sticky.normalizeElement(value, document.body);
+    const parent = ((this.placeholder && this.placeholder.element) || this.element).parentElement;
+    this.$$wrapper = Sticky.normalizeElement(value, parent, document.body);
     this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
   }
 
   constructor(
     element: HTMLElement,
-    options: StickyOptions = {},
+    options: StickyOptions = { placehold: true, observe: true },
     activate: boolean = true,
     onUpdate: () => mixed = () => {},
   ) {
@@ -97,7 +101,7 @@ export default class Sticky {
       Sticky.activate();
     }
 
-    this.placeholder.shouldPlacehold = this.isSticky;
+    this.placeholder.shouldPlacehold = this.options.placehold && this.isSticky;
   }
 
   static computeAbsoluteFloor(target: HTMLElement): number {
@@ -107,11 +111,19 @@ export default class Sticky {
     return absoluteBottom - paddingBottomPixels;
   }
 
-  static normalizeElement(value: string|HTMLElement, fallback: HTMLElement): HTMLElement {
+  static normalizeElement(value: SelectorOrElement, ...fallbacks: MaybeHTMLElement[]): HTMLElement {
     if (value instanceof HTMLElement) {
       return value;
     }
-    return document.querySelector(value) || fallback;
+
+    const element: ?HTMLElement = ([document.querySelector(value), ...fallbacks]
+      .find(item => !!item && item instanceof HTMLElement): any);
+
+    if (element instanceof HTMLElement) {
+      return element;
+    }
+
+    throw new TypeError('[Stuck-js] Could not find HTMLElement');
   }
 
   static register(instance: Sticky): void {
