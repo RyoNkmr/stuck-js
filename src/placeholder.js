@@ -33,7 +33,7 @@ export default class Placeholder {
     this.original = element;
     this.storeInitialComputedStyles();
     this.element = Placeholder.createPlaceholder();
-    this.applySpacingInitialStyles();
+    this.applyInitialStyles();
     this.cachedRect = this.element && this.updateRect();
     this.shouldPlacehold = placehold;
 
@@ -59,13 +59,15 @@ export default class Placeholder {
     }
   }
 
-  applySpacingInitialStyles(): void {
+  applyInitialStyles(): void {
     if (!this.initialComputedStyles) {
       return;
     }
     this.element.style.margin = this.initialComputedStyles.margin;
     this.element.style.minWidth = this.initialComputedStyles.minWidth;
     this.element.style.minHeight = this.initialComputedStyles.minHeight;
+    this.element.style.width = this.initialComputedStyles.width;
+    this.element.style.height = this.initialComputedStyles.height;
   }
 
   destroy(): void {
@@ -114,20 +116,8 @@ export default class Placeholder {
     this.updateRect();
   }
 
-  removeStyles(): void {
-    if (!this.original || !this.element) {
-      return;
-    }
-    this.element.style.width = '';
-    this.element.style.height = '';
-  }
-
   update(forceUpdate: boolean = false): void {
-    if (this.shouldPlacehold) {
-      this.applyStyles(forceUpdate);
-    } else {
-      this.removeStyles();
-    }
+    this.applyStyles(forceUpdate);
     this.onUpdate();
   }
 
