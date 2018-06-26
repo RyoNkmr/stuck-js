@@ -97,20 +97,23 @@ export default class Placeholder {
     if (!this.original || !this.element) {
       return;
     }
-    const originalRect: ClientRect = this.original.getBoundingClientRect();
-    const widthChanged = originalRect.width !== this.cachedRect.width;
-    const heightChanged = originalRect.height !== this.cachedRect.height;
+
+    const { width: originalWidth, height: originalHeight } = this.shouldPlacehold
+      ? this.original.getBoundingClientRect()
+      : { width: 0, height: 0 };
+    const widthChanged = originalWidth !== this.cachedRect.width;
+    const heightChanged = originalHeight !== this.cachedRect.height;
 
     if (!forceUpdate && !widthChanged && !heightChanged) {
       return;
     }
 
     if (forceUpdate || widthChanged) {
-      this.element.style.width = `${originalRect.width}px`;
+      this.element.style.width = `${originalWidth}px`;
     }
 
     if (forceUpdate || heightChanged) {
-      this.element.style.height = `${originalRect.height}px`;
+      this.element.style.height = `${originalHeight}px`;
     }
 
     this.updateRect();
