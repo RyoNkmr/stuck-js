@@ -10,9 +10,9 @@
     "flow": "flow",
     "test": "jest",
     "test:watch": "jest --watch",
-    "publish:major": "git checkout master && git pull && npm version major && git push && git push --tags && npm publish",
-    "publish:minor": "git checkout master && git pull && npm version minor && git push && git push --tags && npm publish",
-    "publish:patch": "git checkout master && git pull && npm version patch && git push && git push --tags && npm publish",
+    "publish:major": "git checkout master && git pull && npm version major && npm run build && git add . && git commit -m 'publish major update' && git push && git push --tags && npm publish",
+    "publish:minor": "git checkout master && git pull && npm version minor && npm run build && git add . && git commit -m 'publish minor update' && git push && git push --tags && npm publish",
+    "publish:patch": "git checkout master && git pull && npm version patch && npm run build && git add . && git commit -m 'publish patch update' && git push && git push --tags && npm publish",
     "prepush": "npm test"
   },
   "author": "Ryonkmr",
