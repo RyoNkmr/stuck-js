@@ -7,7 +7,6 @@ type SelectorOrElement = string|HTMLElement;
 export type StickyOptions = {
   marginTop?: number,
   wrapper?: SelectorOrElement,
-  placehold: boolean,
   observe: boolean,
 };
 
@@ -32,15 +31,15 @@ export default class Sticky {
   }
 
   set isSticky(value: boolean): void {
+    if (this.placeholder) {
+      this.placeholder.shouldPlacehold = value;
+    }
     this.element.dataset.stuck = value ? value.toString() : '';
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
     this.element.style.left = value ? `${this.placeholder.updateRect().left}px` : '';
     if (value) {
       this.computePositionTopFromRect();
-    }
-    if (this.placeholder && this.options.placehold) {
-      this.placeholder.shouldPlacehold = value;
     }
   }
 
@@ -71,7 +70,7 @@ export default class Sticky {
 
   constructor(
     element: HTMLElement,
-    options: StickyOptions = { placehold: true, observe: true },
+    options: StickyOptions = { observe: true },
     activate: boolean = true,
     onUpdate: () => mixed = () => {},
   ) {
@@ -82,7 +81,6 @@ export default class Sticky {
     this.rect = this.element.getBoundingClientRect();
     this.options = {
       marginTop: 0,
-      placehold: true,
       observe: true,
       ...options,
     };
@@ -90,7 +88,6 @@ export default class Sticky {
     this.wrapper = this.options.wrapper;
     this.placeholder = new Placeholder(
       this.element,
-      this.options.placehold,
       this.options.observe,
       onUpdate || Sticky.bulkUpdate,
     );
@@ -101,7 +98,7 @@ export default class Sticky {
       Sticky.activate();
     }
 
-    this.placeholder.shouldPlacehold = this.options.placehold && this.isSticky;
+    this.placeholder.shouldPlacehold = this.isSticky;
   }
 
   static computeAbsoluteFloor(target: HTMLElement): number {
@@ -209,13 +206,13 @@ export default class Sticky {
   update(): void {
     const placeholderRect = this.placeholder.element.getBoundingClientRect();
 
-    if (!this.isSticky && this.marginTop >= placeholderRect.top) {
+    if (!this.isSticky && this.marginTop > placeholderRect.top) {
       this.isSticky = true;
       return;
     }
 
     if (this.isSticky) {
-      if (placeholderRect.top > this.marginTop) {
+      if (placeholderRect.top >= this.marginTop) {
         this.isSticky = false;
         return;
       }

@@ -6,11 +6,11 @@ export default class Placeholder {
   observer: MutationObserver;
   onUpdate: () => mixed;
   initialComputedStyles: ?CSSStyleDeclaration;
-  initiallyHidden: ?boolean;
+  initiallyHidden: boolean;
   $$shouldPlacehold: boolean;
 
   get shouldPlacehold(): boolean {
-    return this.$$shouldPlacehold;
+    return !this.initiallyHidden && this.$$shouldPlacehold;
   }
 
   set shouldPlacehold(value: boolean): void {
@@ -24,7 +24,6 @@ export default class Placeholder {
 
   constructor(
     element: HTMLElement,
-    placehold: boolean = true,
     observe: boolean = true,
     onUpdate: () => mixed = () => {},
   ) {
@@ -35,7 +34,6 @@ export default class Placeholder {
     this.element = Placeholder.createPlaceholder();
     this.applyInitialStyles();
     this.cachedRect = this.element && this.updateRect();
-    this.shouldPlacehold = placehold;
 
     Placeholder.wrap(this.original, this.element);
 
@@ -60,7 +58,7 @@ export default class Placeholder {
   }
 
   applyInitialStyles(): void {
-    if (!this.initialComputedStyles) {
+    if (!this.initialComputedStyles || this.initiallyHidden) {
       return;
     }
     this.element.style.margin = this.initialComputedStyles.margin;
@@ -98,9 +96,7 @@ export default class Placeholder {
       return;
     }
 
-    const { width: originalWidth, height: originalHeight } = this.shouldPlacehold
-      ? this.original.getBoundingClientRect()
-      : { width: 0, height: 0 };
+    const { width: originalWidth, height: originalHeight } = this.original.getBoundingClientRect();
     const widthChanged = originalWidth !== this.cachedRect.width;
     const heightChanged = originalHeight !== this.cachedRect.height;
 
@@ -119,8 +115,20 @@ export default class Placeholder {
     this.updateRect();
   }
 
+  removeStyles(): void {
+    if (!this.original || !this.element) {
+      return;
+    }
+    this.element.style.width = '';
+    this.element.style.height = '';
+  }
+
   update(forceUpdate: boolean = false): void {
-    this.applyStyles(forceUpdate);
+    if (this.shouldPlacehold) {
+      this.applyStyles(forceUpdate);
+    } else {
+      this.removeStyles();
+    }
     this.onUpdate();
   }
 
