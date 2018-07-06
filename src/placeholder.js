@@ -96,9 +96,7 @@ export default class Placeholder {
       return;
     }
 
-    const { width: originalWidth, height: originalHeight } = this.shouldPlacehold
-      ? this.original.getBoundingClientRect()
-      : { width: 0, height: 0 };
+    const { width: originalWidth, height: originalHeight } = this.original.getBoundingClientRect();
     const widthChanged = originalWidth !== this.cachedRect.width;
     const heightChanged = originalHeight !== this.cachedRect.height;
 
