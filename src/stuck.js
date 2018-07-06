@@ -15,7 +15,7 @@ export default class Stuck {
 
   constructor(
     settings: StickySetting[] | StickySetting = [],
-    defaultOptions: StickyOptions = { placehold: true, observe: true },
+    defaultOptions: StickyOptions = { observe: true },
     sharedStacking: boolean = true,
   ) {
     this.defaultOptions = defaultOptions;

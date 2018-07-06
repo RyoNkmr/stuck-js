@@ -95,7 +95,7 @@ describe('Stuck', () => {
         const { Stuck } = StuckJs;
         const stuck = new Stuck([
           { selector: '#js-box00' },
-          { selector: '#js-box02', placehold: false },
+          { selector: '#js-box02' },
           { selector: '#js-box03' },
         ]);
       });
@@ -108,21 +108,6 @@ describe('Stuck', () => {
         .then(rects => rects.map(el => el.top));
       expect(rectsAfterScroll).toEqual([0, 250, 500]);
     });
-
-    test('handling falsy placehold with element initially hidden', async () => {
-      await page.evaluate(() => {
-        const { Stuck } = StuckJs;
-        const stuck = new Stuck([
-          { selector: '#js-box00' },
-          { selector: '#js-box02', placehold: false },
-        ]);
-      });
-      await scrollTo(0, 430); // This is the minimum scroll height of displaying box02
-      const rectsAfterScroll = await getRects('#js-box02', '#js-box03')
-        .then(rects => rects.map(el => el.top));
-      expect(rectsAfterScroll).toEqual([250, 280]);
-    });
-
   });
 
   describe('Sticky instance creation', () => {
