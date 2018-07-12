@@ -58,7 +58,7 @@ export default class Sticky {
     return this.$$wrapper;
   }
 
-  set wrapper(value: SelectorOrElement): void {
+  set wrapper(value?: SelectorOrElement): void {
     if (!(document.body instanceof HTMLElement)) {
       throw new TypeError('[Stuck.js] document.body is not HTMLElement in this environment');
     }
@@ -108,12 +108,15 @@ export default class Sticky {
     return absoluteBottom - paddingBottomPixels;
   }
 
-  static normalizeElement(value: SelectorOrElement, ...fallbacks: MaybeHTMLElement[]): HTMLElement {
-    if (value instanceof HTMLElement) {
+  static normalizeElement(
+    value?: SelectorOrElement,
+    ...fallbacks: MaybeHTMLElement[]
+  ): HTMLElement {
+    if (value && value instanceof HTMLElement) {
       return value;
     }
 
-    const element: ?HTMLElement = ([document.querySelector(value), ...fallbacks]
+    const element: ?HTMLElement = ([value && document.querySelector(value), ...fallbacks]
       .find(item => !!item && item instanceof HTMLElement): any);
 
     if (element instanceof HTMLElement) {
@@ -179,28 +182,29 @@ export default class Sticky {
 
   computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
     this.rect = rect;
-    if (this.options.wrapper instanceof HTMLElement) {
-      this.floor = Sticky.computeAbsoluteFloor(this.options.wrapper);
-    }
+    this.floor = Sticky.computeAbsoluteFloor(this.wrapper);
+
     const relativeFloor = (this.floor || 0) - global.pageYOffset;
-    if (this.rect.bottom > relativeFloor && !this.isStickToBottom) {
+
+    if (this.rect.bottom >= relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - this.rect.height;
       this.isStickToBottom = true;
       return;
     }
 
-    if (this.isStickToBottom) {
-      if (this.rect.top === this.marginTop) {
-        this.isStickToBottom = false;
-        return;
-      }
-      if (this.rect.top < this.marginTop) {
-        this.top = relativeFloor - this.rect.height;
-        return;
-      }
+    if (!this.isStickToBottom) {
+      return;
     }
 
-    this.top = null;
+    if (this.rect.top >= this.marginTop) {
+      this.top = this.marginTop;
+      this.isStickToBottom = false;
+      return;
+    }
+
+    if (this.rect.top < this.marginTop) {
+      this.top = relativeFloor - this.rect.height;
+    }
   }
 
   update(): void {
