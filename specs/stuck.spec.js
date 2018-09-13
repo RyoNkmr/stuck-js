@@ -112,10 +112,18 @@ describe('Stuck', () => {
 
   describe('Sticky instance creation', () => {
     describe('when Stuck instance is constructed', () => {
-      it('create an Sticky instance', async () => {
+      it('creates an Sticky instance', async () => {
         const instanceLength = await page.evaluate(() => (
           new StuckJs.Stuck({ selector: '#js-box01' }).instances.length
         ));
+        expect(instanceLength).toBe(1);
+      });
+
+      it('creates an Sticky instance with specified HTMLelement', async () => {
+        const instanceLength = await page.evaluate(() => {
+          const element = document.querySelector('#js-box01');
+          return new StuckJs.Stuck({ element }).instances.length;
+        });
         expect(instanceLength).toBe(1);
       });
 
@@ -123,6 +131,14 @@ describe('Stuck', () => {
         const instanceLength = await page.evaluate(() => (
           new StuckJs.Stuck({ selector: '.js-box' }).instances.length
         ));
+        expect(instanceLength).toBe(2);
+      });
+
+      it('creates multiple Stickes with specified HTMLelements at once', async () => {
+        const instanceLength = await page.evaluate(() => {
+          const elements = document.querySelectorAll('.js-box');
+          return new StuckJs.Stuck({ elements }).instances.length;
+        });
         expect(instanceLength).toBe(2);
       });
 
@@ -134,6 +150,18 @@ describe('Stuck', () => {
           ]).instances.length
         ));
         expect(instanceLength).toBe(3);
+      });
+
+      it('throws when no selector, element nor elements in setting was given', async () => {
+        const isThrown = await page.evaluate(() => {
+          try {
+            new StuckJs.Stuck({})
+            return false;
+          } catch(error) {
+            return true;
+          }
+        });
+        expect(isThrown).toBe(true);
       });
     });
 
