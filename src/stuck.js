@@ -3,14 +3,13 @@ import Sticky from './sticky';
 import type { Stickies, StickyOptions } from './sticky';
 
 type StickySetting = StickyOptions & {
-  selector: ?string,
-  elements: ?HTMLElement[],
-  element: ?HTMLElement,
+  selector?: string,
+  element?: HTMLElement | HTMLElement[],
 };
 
-const getElementsArrayBySetting = ({ element, elements, selector }) => {
-  if (element) return [element];
-  if (elements) return [...elements];
+const getElementsArrayBySetting = ({ element, selector }) => {
+  if (element instanceof HTMLElement) return [element];
+  if (Array.isArray(element) || typeof element === 'object') return Array.from(element);
   if (selector) return [...document.querySelectorAll(selector)];
   throw new Error('[Stuck.js] No selector, element nor elements in setting');
 };
@@ -45,9 +44,9 @@ export default class Stuck {
   }
 
   register({
-    selector, element, elements, ...options
+    selector, element, ...options
   }: StickySetting, sharedStacking: boolean = true): Stickies {
-    const targetElements = getElementsArrayBySetting({ selector, element, elements })
+    const targetElements = getElementsArrayBySetting({ selector, element })
       .filter(target => !Stuck.registeredInstances.map(instance => instance.element)
         .includes(target));
 

@@ -137,7 +137,7 @@ describe('Stuck', () => {
       it('creates multiple Stickes with specified HTMLelements at once', async () => {
         const instanceLength = await page.evaluate(() => {
           const elements = document.querySelectorAll('.js-box');
-          return new StuckJs.Stuck({ elements }).instances.length;
+          return new StuckJs.Stuck({ element: elements }).instances.length;
         });
         expect(instanceLength).toBe(2);
       });
