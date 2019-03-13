@@ -1,6 +1,6 @@
 # Stuck.js
 
-[![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=svg)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
+[![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=shield)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
 [![npm version](https://badge.fury.io/js/stuck-js.svg)](https://badge.fury.io/js/stuck-js)
 ![david-dm](https://david-dm.org/RyoNkmr/stuck-js.svg)
 
