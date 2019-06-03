@@ -3,33 +3,51 @@ version: 2
 defaults: &defaults
   working_directory: ~/app
   docker:
-    - image: circleci/node:10
+    - image: circleci/node:12
+
+commands:
+  npm_install:
+    steps:
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
+      - run: npm ci
+      - save_cache:
+          paths:
+            - ~/.npm
+          key: dependency-cache-{{ checksum "package.json" }}
 
 jobs:
   build:
     <<: *defaults
     steps:
       - checkout
+      - npm_install
+      - run: npm run build
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - run: npm run build
       - restore_cache:
           keys:
-            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
-            - dependency-cache-{{ .Branch }}-
-      - run: npm i
-      - run: npm run build
+            - lint-cache-{{ .Branch }}-{{ .Revision }}
+            - lint-cache-{{ .Branch }}
+            - lint-cache-
+      - run:
+          name: Run Lint
+          command: npm run ci:lint
       - save_cache:
           paths:
-            - node_modules
-            - lib
-          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+            - ~/.cache/eslint
+          key: lint-cache-{{ .Branch }}-{{ .Revision }}
   test:
     <<: *defaults
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
-            - dependency-cache-{{ .Branch }}-
-      - run: npm i
+      - npm_install
       - run:
           name: Add dependency for puppeteer
           command: |
@@ -40,17 +58,29 @@ jobs:
               libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libnss3\
       - run:
           name: Run tests
-          command: npm test
-      - save_cache:
-          paths:
-            - node_modules
-          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+          command: npm run ci:test
+  release:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - run: npx semantic-release
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
+      - lint:
+          requires:
+            - build
       - test:
           requires:
             - build
+      - release:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
