@@ -1,6 +1,6 @@
 const path = require('path');
 const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
-const CompressionPlugin = require("compression-webpack-plugin");
+const CompressionPlugin = require('compression-webpack-plugin');
 
 const prodBuild = {
   mode: 'production',
@@ -16,52 +16,24 @@ const prodBuild = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-env', {
-                targets: {
-                  browsers: [
-                    'last 1 version',
-                    '> 5%',
-                  ],
-                },
-                modules: false,
-              }],
-            ],
-            plugins: [
-              'transform-class',
-              'transform-class-properties',
-              ['@babel/plugin-transform-runtime', {
-                polyfill: false,
-                regenerator: true,
-              }],
-              '@babel/plugin-syntax-flow',
-              '@babel/plugin-proposal-object-rest-spread',
-              'transform-flow-strip-types',
-            ],
+        test: /\.[tj]s$/,
+        exclude: /node_modules|\.cache/,
+        use: [
+          {
+            loader: 'ts-loader',
           },
-        },
-      },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader',
-          options: {
-            fix: true,
+          {
+            loader: 'eslint-loader',
+            options: {
+              fix: true,
+              cache: true,
+            },
           },
-        },
+        ],
       },
     ],
   },
-  plugins: [
-    new FlowBabelWebpackPlugin(),
-    new CompressionPlugin(),
-  ],
+  plugins: [new FlowBabelWebpackPlugin(), new CompressionPlugin()],
 };
 
 const docBuild = {
@@ -75,7 +47,4 @@ const docBuild = {
   plugins: [],
 };
 
-module.exports = [
-  docBuild,
-  prodBuild,
-];
+module.exports = [docBuild, prodBuild];
