@@ -38,4 +38,12 @@ module.exports = {
     window: true,
     document: true,
   },
+  settings: {
+    'import/resolver': {
+      webpack: {
+        config: 'webpack.config.js',
+      },
+    },
+    'import/extensions': ['.js', '.ts'],
+  },
 };
