@@ -1,22 +1,27 @@
 import Sticky, { Selector, StickyOptions } from './sticky';
 
-type SelectorOrElementOption = { selector: Selector } & {
+type SelectorOption = { selector: Selector; element?: undefined };
+type ElementOption = {
   element: HTMLElement | HTMLElement[];
+  selector?: undefined;
 };
+type SelectorOrElementOption = SelectorOption | ElementOption;
 type StickySetting = StickyOptions & SelectorOrElementOption;
 
-const getElementsArrayBySetting = ({
-  element,
-  selector,
-}: SelectorOrElementOption): HTMLElement[] => {
-  if (element instanceof HTMLElement) {
-    return [element];
+const getElementsArrayBySetting = (
+  option: SelectorOrElementOption
+): HTMLElement[] => {
+  if (option.element) {
+    const { element } = option;
+    if (element instanceof HTMLElement) {
+      return [element];
+    }
+    if (Array.isArray(element) || typeof element === 'object') {
+      return Array.from(element);
+    }
   }
-  if (Array.isArray(element) || typeof element === 'object') {
-    return Array.from(element);
-  }
-  if (selector) {
-    return Array.from(document.querySelectorAll(selector)).filter(
+  if (option.selector) {
+    return Array.from(document.querySelectorAll(option.selector)).filter(
       (maybeHTMLElement): maybeHTMLElement is HTMLElement =>
         maybeHTMLElement instanceof HTMLElement
     );
@@ -67,7 +72,7 @@ export default class Stuck {
     const stickies = getElementsArrayBySetting({
       selector,
       element,
-    })
+    } as SelectorOrElementOption)
       .filter(
         (target: HTMLElement) =>
           !Stuck.registeredInstances

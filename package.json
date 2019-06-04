@@ -12,10 +12,10 @@
     "build": "cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress",
     "lint": "eslint --cache --ext .ts,.js src",
     "ci:lint": "eslint --cache --cache-location ~/.cache/eslint --quiet --ext .ts,.js src",
+    "pretest": "npm build",
     "test": "jest",
     "ci:test": "jest",
-    "test:watch": "jest --watch",
-    "prepush": "npm test"
+    "test:watch": "jest --watch"
   },
   "author": "Ryonkmr",
   "keywords": [
@@ -73,7 +73,8 @@
   "husky": {
     "hooks": {
       "prepare-commit-msg": "exec < /dev/tty && git cz --hook",
-      "pre-commit": "lint-staged && pretty-quick --staged"
+      "pre-commit": "lint-staged && pretty-quick --staged",
+      "pre-push": "npm build && npm test"
     }
   },
   "release": {
@@ -87,9 +88,14 @@
     ]
   },
   "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix",
-      "git add"
+    "linters": {
+      "*.{js,ts}": [
+        "eslint --fix",
+        "git add"
+      ]
+    },
+    "ignore": [
+      "docs/*.js"
     ]
   }
 }

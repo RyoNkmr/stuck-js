@@ -12,6 +12,9 @@ const prodBuild = {
     library: 'StuckJs',
     libraryTarget: 'umd',
   },
+  resolve: {
+    extensions: ['.ts', '.js'],
+  },
   module: {
     rules: [
       {
@@ -35,4 +38,4 @@ const docBuild = {
   plugins: [],
 };
 
-module.exports = [docBuild, prodBuild];
+module.exports = [prodBuild, docBuild];

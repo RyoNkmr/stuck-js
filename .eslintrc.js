@@ -33,6 +33,21 @@ module.exports = {
     // ======================================================
     'arrow-parens': ['error', 'as-needed'],
     'no-param-reassign': ['error', { props: false }],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
+    camelcase: 'off',
+    '@typescript-eslint/camelcase': [
+      'error',
+      {
+        allow: ['^\\$_'],
+      },
+    ],
   },
   globals: {
     window: true,
