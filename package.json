@@ -36,14 +36,19 @@
     "@semantic-release/npm": "^5.1.9",
     "@semantic-release/release-notes-generator": "^7.1.4",
     "@types/jest": "^24.0.13",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
     "compression-webpack-plugin": "^2.0.0",
     "cross-env": "^5.2.0",
-    "cz-conventional-changelog": "^2.1.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-import-resolver-webpack": "^0.11.1",
     "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.17.3",
-    "git-cz": "^3.0.1",
+    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
     "husky": "^2.3.0",
     "jest": "^24.8.0",
     "jest-puppeteer": "^4.2.0",
@@ -59,7 +64,7 @@
   },
   "husky": {
     "hooks": {
-      "prepare-commit-msg": "exec < /dev/tty && git cz --no-verify",
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook",
       "pre-commit": "pretty-quick --staged"
     }
   },
@@ -72,10 +77,5 @@
       "@semantic-release/npm",
       "@semantic-release/git"
     ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
   }
 }
