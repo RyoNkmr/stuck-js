@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 defaults: &defaults
   working_directory: ~/app
@@ -24,13 +24,18 @@ jobs:
     steps:
       - checkout
       - npm_install
+      - restore_cache:
+          key: build-{{ .Branch }}-{{ .Revision }}
       - run: npm run build
+      - save_cache:
+          paths:
+            - ./lib
+          key: build-{{ .Branch }}-{{ .Revision }}
   lint:
     <<: *defaults
     steps:
       - checkout
       - npm_install
-      - run: npm run build
       - restore_cache:
           keys:
             - lint-cache-{{ .Branch }}-{{ .Revision }}
@@ -56,6 +61,8 @@ jobs:
               libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
               libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
               libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libnss3\
+      - restore_cache:
+          key: build-{{ .Branch }}-{{ .Revision }}
       - run:
           name: Run tests
           command: npm run ci:test
