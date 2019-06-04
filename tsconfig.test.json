@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "lib": ["es2015", "dom"],
+    "declaration": false,
+    "allowJs": true,
+    "noEmit": true,
+    "types": ["@types/jest"]
+  },
+  "include": ["src/*", "specs/*"]
+}
