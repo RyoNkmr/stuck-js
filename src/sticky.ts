@@ -1,55 +1,59 @@
-/* @flow */
 import Placeholder from './placeholder';
 
-type MaybeHTMLElement = HTMLElement|Element|null|void;
-type SelectorOrElement = string|HTMLElement;
+type MaybeHTMLElement = HTMLElement | Element | null | void;
+export type Selector = string;
+type SelectorOrElement = Selector | HTMLElement;
+
+type PartialRequired<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
 export type StickyOptions = {
-  marginTop?: number,
-  wrapper?: SelectorOrElement,
-  observe: boolean,
+  marginTop?: number;
+  wrapper?: SelectorOrElement;
+  observe: boolean;
 };
 
 export default class Sticky {
   element: HTMLElement;
-  options: StickyOptions;
+  options: PartialRequired<StickyOptions, 'marginTop'>;
   placeholder: Placeholder;
   marginTop: number = 0;
-  isStickToBottom: ?boolean = false;
+  isStickToBottom: boolean = false;
   rect: ClientRect;
-  floor: number;
-  // private
-  $$wrapper: HTMLElement;
-  $$additionalTop: ?number;
+  floor?: number;
 
-  static instances: Stickies = [];
+  private $$wrapper!: HTMLElement;
+  private $$additionalTop?: number;
+
+  static instances: Sticky[] = [];
   static activated: boolean = false;
-  static bulkUpdateRequestId: ?number = null;
+  static bulkUpdateRequestId: number | null = null;
 
   get isSticky(): boolean {
     return this.element !== null && this.element.style.position === 'fixed';
   }
 
-  set isSticky(value: boolean): void {
+  set isSticky(value: boolean) {
     if (this.placeholder) {
       this.placeholder.shouldPlacehold = value;
     }
     this.element.dataset.stuck = value ? value.toString() : '';
     this.element.style.position = value ? 'fixed' : '';
     this.element.style.top = value ? `${this.top}px` : '';
-    this.element.style.left = value ? `${this.placeholder.updateRect().left}px` : '';
+    this.element.style.left = value
+      ? `${this.placeholder.updateRect().left}px`
+      : '';
     if (value) {
       this.computePositionTopFromRect();
     }
   }
 
   get top(): number {
-    return (this.$$additionalTop || this.$$additionalTop === 0)
+    return this.$$additionalTop || this.$$additionalTop === 0
       ? this.$$additionalTop
       : this.marginTop;
   }
 
-  set top(value: ?number): void {
+  set top(value: number) {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
   }
@@ -58,12 +62,23 @@ export default class Sticky {
     return this.$$wrapper;
   }
 
-  set wrapper(value?: SelectorOrElement): void {
+  private setWrapperFromSelectorOrElement(
+    selectorOrElement?: SelectorOrElement
+  ) {
     if (!(document.body instanceof HTMLElement)) {
-      throw new TypeError('[Stuck.js] document.body is not HTMLElement in this environment');
+      throw new TypeError(
+        '[Stuck.js] document.body is not HTMLElement in this environment'
+      );
     }
-    const parent = ((this.placeholder && this.placeholder.element) || this.element).parentElement;
-    this.$$wrapper = Sticky.normalizeElement(value, parent, document.body);
+    const parent = (
+      (this.placeholder && this.placeholder.element) ||
+      this.element
+    ).parentElement;
+    this.$$wrapper = Sticky.normalizeElement(
+      selectorOrElement,
+      parent,
+      document.body
+    );
     this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
     this.options.wrapper = this.$$wrapper;
   }
@@ -72,7 +87,7 @@ export default class Sticky {
     element: HTMLElement,
     options: StickyOptions = { observe: true },
     activate: boolean = true,
-    onUpdate: () => mixed = () => {},
+    onUpdate: () => void = () => {}
   ) {
     if (!element) {
       throw new Error('[Stuck-js] Invalid element given');
@@ -81,15 +96,14 @@ export default class Sticky {
     this.rect = this.element.getBoundingClientRect();
     this.options = {
       marginTop: 0,
-      observe: true,
       ...options,
     };
-    this.marginTop = this.options.marginTop;
-    this.wrapper = this.options.wrapper;
+    this.marginTop = this.options.marginTop || 0;
+    this.setWrapperFromSelectorOrElement(this.options.wrapper);
     this.placeholder = new Placeholder(
       this.element,
-      this.options.observe,
-      onUpdate || Sticky.bulkUpdate,
+      this.options.observe || true,
+      onUpdate || Sticky.bulkUpdate
     );
     this.element.dataset.stuck = '';
     Sticky.register(this);
@@ -102,9 +116,11 @@ export default class Sticky {
   }
 
   static computeAbsoluteFloor(target: HTMLElement): number {
-    const absoluteBottom = target.getBoundingClientRect().bottom + global.pageYOffset;
+    const absoluteBottom =
+      target.getBoundingClientRect().bottom + window.pageYOffset;
     const { paddingBottom } = window.getComputedStyle(target);
-    const paddingBottomPixels = parseInt(paddingBottom, 10) || 0;
+    const paddingBottomPixels =
+      paddingBottom !== null ? parseInt(paddingBottom, 10) : 0;
     return absoluteBottom - paddingBottomPixels;
   }
 
@@ -116,8 +132,9 @@ export default class Sticky {
       return value;
     }
 
-    const element: ?HTMLElement = ([value && document.querySelector(value), ...fallbacks]
-      .find(item => !!item && item instanceof HTMLElement): any);
+    const element = [value && document.querySelector(value), ...fallbacks].find(
+      (item): item is HTMLElement => !!item && item instanceof HTMLElement
+    );
 
     if (element instanceof HTMLElement) {
       return element;
@@ -164,7 +181,9 @@ export default class Sticky {
   }
 
   static bulkPlaceholderUpdate(): void {
-    window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    if (Sticky.bulkUpdateRequestId) {
+      window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    }
     Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
       Sticky.instances.forEach(instance => {
         instance.placeholder.update();
@@ -174,17 +193,21 @@ export default class Sticky {
   }
 
   static bulkUpdate(): void {
-    window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    if (Sticky.bulkUpdateRequestId) {
+      window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
+    }
     Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
       Sticky.instances.forEach(instance => instance.update());
     });
   }
 
-  computePositionTopFromRect(rect?: ClientRect = this.element.getBoundingClientRect()) {
+  computePositionTopFromRect(
+    rect: ClientRect = this.element.getBoundingClientRect()
+  ) {
     this.rect = rect;
     this.floor = Sticky.computeAbsoluteFloor(this.wrapper);
 
-    const relativeFloor = (this.floor || 0) - global.pageYOffset;
+    const relativeFloor = (this.floor || 0) - window.pageYOffset;
 
     if (this.rect.bottom >= relativeFloor && !this.isStickToBottom) {
       this.top = relativeFloor - this.rect.height;
@@ -230,5 +253,3 @@ export default class Sticky {
     }
   }
 }
-
-export type Stickies = Sticky[];
