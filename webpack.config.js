@@ -17,7 +17,7 @@ const prodBuild = {
       {
         test: /\.[tj]s$/,
         exclude: /node_modules|\.cache/,
-        use: ['ts-loader', 'eslint-loader'],
+        use: ['ts-loader'],
       },
     ],
   },
@@ -33,24 +33,6 @@ const docBuild = {
   },
   devtool: 'inline-source-map',
   plugins: [],
-  module: {
-    rules: [
-      {
-        test: /\.[tj]s$/,
-        exclude: /node_modules|\.cache/,
-        use: [
-          'ts-loader',
-          {
-            loader: 'eslint-loader',
-            options: {
-              fix: true,
-              cache: true,
-            },
-          },
-        ],
-      },
-    ],
-  },
 };
 
 module.exports = [docBuild, prodBuild];

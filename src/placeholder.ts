@@ -1,4 +1,3 @@
-/* @flow */
 export default class Placeholder {
   original: HTMLElement;
   element: HTMLElement;
