@@ -1,11 +1,10 @@
 const path = require('path');
-const FlowBabelWebpackPlugin = require('flow-babel-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
 const prodBuild = {
   mode: 'production',
   entry: {
-    index: './src/index.js',
+    index: './src/index.ts',
   },
   output: {
     path: path.resolve(__dirname, 'lib'),
@@ -18,22 +17,11 @@ const prodBuild = {
       {
         test: /\.[tj]s$/,
         exclude: /node_modules|\.cache/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-          {
-            loader: 'eslint-loader',
-            options: {
-              fix: true,
-              cache: true,
-            },
-          },
-        ],
+        use: ['ts-loader', 'eslint-loader'],
       },
     ],
   },
-  plugins: [new FlowBabelWebpackPlugin(), new CompressionPlugin()],
+  plugins: [new CompressionPlugin()],
 };
 
 const docBuild = {
@@ -45,6 +33,24 @@ const docBuild = {
   },
   devtool: 'inline-source-map',
   plugins: [],
+  module: {
+    rules: [
+      {
+        test: /\.[tj]s$/,
+        exclude: /node_modules|\.cache/,
+        use: [
+          'ts-loader',
+          {
+            loader: 'eslint-loader',
+            options: {
+              fix: true,
+              cache: true,
+            },
+          },
+        ],
+      },
+    ],
+  },
 };
 
 module.exports = [docBuild, prodBuild];
