@@ -13,6 +13,7 @@
     "lint": "eslint --cache --ext .ts,.js src",
     "ci:lint": "eslint --cache --cache-location ~/.cache/eslint --quiet --ext .ts,.js src",
     "pretest": "npm build",
+    "prettier": "prettier --write ./src/**",
     "test": "jest",
     "ci:test": "jest",
     "test:watch": "jest --watch"

@@ -1,26 +1,26 @@
-import { noop } from './utility';
+import { noop } from './utility'
 
 export default class Placeholder {
-  public original: HTMLElement;
-  public element: HTMLElement;
-  public cachedRect: ClientRect;
-  public observer?: MutationObserver;
-  public onUpdate: () => void;
-  public initialComputedStyles: CSSStyleDeclaration;
-  public initiallyHidden: boolean;
-  private $$shouldPlacehold: boolean = true;
+  public original: HTMLElement
+  public element: HTMLElement
+  public cachedRect: ClientRect
+  public observer?: MutationObserver
+  public onUpdate: () => void
+  public initialComputedStyles: CSSStyleDeclaration
+  public initiallyHidden: boolean
+  private $$shouldPlacehold: boolean = true
 
   public get shouldPlacehold(): boolean {
-    return !this.initiallyHidden && this.$$shouldPlacehold;
+    return !this.initiallyHidden && this.$$shouldPlacehold
   }
 
   public set shouldPlacehold(value: boolean) {
     if (this.shouldPlacehold === value) {
-      return;
+      return
     }
 
-    this.$$shouldPlacehold = value;
-    this.update(true);
+    this.$$shouldPlacehold = value
+    this.update(true)
   }
 
   public constructor(
@@ -28,118 +28,118 @@ export default class Placeholder {
     observe: boolean = true,
     onUpdate: () => void = noop
   ) {
-    this.original = element;
-    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : noop;
+    this.original = element
+    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : noop
 
-    this.initialComputedStyles = window.getComputedStyle(this.original);
-    this.initiallyHidden = this.initialComputedStyles.display === 'none';
+    this.initialComputedStyles = window.getComputedStyle(this.original)
+    this.initiallyHidden = this.initialComputedStyles.display === 'none'
 
     if (this.initiallyHidden) {
       this.execWhileStucking(
         (): void => {
-          this.initialComputedStyles = window.getComputedStyle(this.original);
+          this.initialComputedStyles = window.getComputedStyle(this.original)
         }
-      );
+      )
     }
 
-    this.element = Placeholder.createPlaceholderElement();
-    this.applyInitialStyles();
-    this.cachedRect = this.element && this.updateRect();
+    this.element = Placeholder.createPlaceholderElement()
+    this.applyInitialStyles()
+    this.cachedRect = this.element && this.updateRect()
 
-    Placeholder.wrap(this.original, this.element);
+    Placeholder.wrap(this.original, this.element)
 
     if (observe) {
       this.observer = Placeholder.createObserver(
         this.original,
         (): void => this.update()
-      );
+      )
     }
   }
 
   public update(forceUpdate: boolean = false): void {
     if (this.shouldPlacehold) {
-      this.applyStyles(forceUpdate);
+      this.applyStyles(forceUpdate)
     } else {
-      this.removeStyles();
+      this.removeStyles()
     }
-    this.onUpdate();
+    this.onUpdate()
   }
 
   public updateRect(): ClientRect {
-    this.cachedRect = this.element.getBoundingClientRect();
+    this.cachedRect = this.element.getBoundingClientRect()
     if (this.initiallyHidden) {
       this.execWhileStucking(
         (): void => {
-          this.cachedRect = this.element.getBoundingClientRect();
+          this.cachedRect = this.element.getBoundingClientRect()
         }
-      );
+      )
     }
-    return this.cachedRect;
+    return this.cachedRect
   }
 
   public destroy(): void {
     if (this.observer) {
-      this.observer.disconnect();
-      delete this.observer;
+      this.observer.disconnect()
+      delete this.observer
     }
-    Placeholder.unwrap(this.original);
-    delete this.element;
-    delete this.original;
-    delete this.cachedRect;
-    delete this.onUpdate;
+    Placeholder.unwrap(this.original)
+    delete this.element
+    delete this.original
+    delete this.cachedRect
+    delete this.onUpdate
   }
 
   private execWhileStucking(execute: () => void): void {
-    const state = this.original.dataset.stuck;
-    this.original.dataset.stuck = 'true';
-    execute();
-    this.original.dataset.stuck = state;
+    const state = this.original.dataset.stuck
+    this.original.dataset.stuck = 'true'
+    execute()
+    this.original.dataset.stuck = state
   }
 
   private applyInitialStyles(): void {
     if (!this.initialComputedStyles || this.initiallyHidden) {
-      return;
+      return
     }
-    this.element.style.margin = this.initialComputedStyles.margin;
-    this.element.style.minWidth = this.initialComputedStyles.minWidth;
-    this.element.style.minHeight = this.initialComputedStyles.minHeight;
-    this.element.style.width = this.initialComputedStyles.width;
-    this.element.style.height = this.initialComputedStyles.height;
+    this.element.style.margin = this.initialComputedStyles.margin
+    this.element.style.minWidth = this.initialComputedStyles.minWidth
+    this.element.style.minHeight = this.initialComputedStyles.minHeight
+    this.element.style.width = this.initialComputedStyles.width
+    this.element.style.height = this.initialComputedStyles.height
   }
 
   private applyStyles(forceUpdate: boolean = false): void {
     if (!this.original || !this.element) {
-      return;
+      return
     }
 
     const {
       width: originalWidth,
       height: originalHeight,
-    } = this.original.getBoundingClientRect();
-    const widthChanged = originalWidth !== this.cachedRect.width;
-    const heightChanged = originalHeight !== this.cachedRect.height;
+    } = this.original.getBoundingClientRect()
+    const widthChanged = originalWidth !== this.cachedRect.width
+    const heightChanged = originalHeight !== this.cachedRect.height
 
     if (!forceUpdate && !widthChanged && !heightChanged) {
-      return;
+      return
     }
 
     if (forceUpdate || widthChanged) {
-      this.element.style.width = `${originalWidth}px`;
+      this.element.style.width = `${originalWidth}px`
     }
 
     if (forceUpdate || heightChanged) {
-      this.element.style.height = `${originalHeight}px`;
+      this.element.style.height = `${originalHeight}px`
     }
 
-    this.updateRect();
+    this.updateRect()
   }
 
   private removeStyles(): void {
     if (!this.original || !this.element) {
-      return;
+      return
     }
-    this.element.style.width = '';
-    this.element.style.height = '';
+    this.element.style.width = ''
+    this.element.style.height = ''
   }
 
   private static createObserver(
@@ -151,53 +151,53 @@ export default class Placeholder {
         `[Stuck.js] Could not create mutation observer on targetNode ${String(
           targetNode
         )}. This should be HTMLElement`
-      );
+      )
     }
 
     const detectSizeMutation = ({ type }: MutationRecord): boolean =>
-      type === 'childList' || type === 'attributes';
+      type === 'childList' || type === 'attributes'
 
     const observer = new MutationObserver(
       (mutations: readonly MutationRecord[]): void => {
-        const isMutated = mutations.some(detectSizeMutation);
+        const isMutated = mutations.some(detectSizeMutation)
         if (isMutated) {
-          callback();
+          callback()
         }
       }
-    );
+    )
 
     observer.observe(targetNode, {
       attributes: true,
       attributeFilter: ['style', 'class'],
       childList: true,
       subtree: true,
-    });
-    return observer;
+    })
+    return observer
   }
 
   private static unwrap(target: HTMLElement): HTMLElement {
-    const wrapper = target.parentNode;
+    const wrapper = target.parentNode
 
     if (wrapper instanceof HTMLElement) {
-      wrapper.insertAdjacentElement('beforebegin', target);
-      const parent = wrapper.parentNode;
+      wrapper.insertAdjacentElement('beforebegin', target)
+      const parent = wrapper.parentNode
 
       if (parent instanceof HTMLElement) {
-        parent.removeChild(wrapper);
+        parent.removeChild(wrapper)
       }
     }
-    return target;
+    return target
   }
 
   private static wrap(target: HTMLElement, wrapper: HTMLElement): HTMLElement {
     if (target.parentNode !== wrapper) {
-      target.insertAdjacentElement('beforebegin', wrapper);
-      wrapper.appendChild(target);
+      target.insertAdjacentElement('beforebegin', wrapper)
+      wrapper.appendChild(target)
     }
-    return wrapper;
+    return wrapper
   }
 
   private static createPlaceholderElement(tagName = 'div'): HTMLElement {
-    return document.createElement(tagName);
+    return document.createElement(tagName)
   }
 }
