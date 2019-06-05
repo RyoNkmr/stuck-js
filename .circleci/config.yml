@@ -66,6 +66,12 @@ jobs:
       - run:
           name: Run tests
           command: npm run ci:test
+  release-dry:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - run: npx semantic-release -d
   release:
     <<: *defaults
     steps:
@@ -84,6 +90,13 @@ workflows:
       - test:
           requires:
             - build
+      - release-dry:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              ignore: master
       - release:
           requires:
             - lint
