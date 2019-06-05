@@ -1,18 +1,20 @@
+import { noop } from './utility';
+
 export default class Placeholder {
-  original: HTMLElement;
-  element: HTMLElement;
-  cachedRect: ClientRect;
-  observer?: MutationObserver;
-  onUpdate: () => void;
-  initialComputedStyles: CSSStyleDeclaration;
-  initiallyHidden: boolean;
+  public original: HTMLElement;
+  public element: HTMLElement;
+  public cachedRect: ClientRect;
+  public observer?: MutationObserver;
+  public onUpdate: () => void;
+  public initialComputedStyles: CSSStyleDeclaration;
+  public initiallyHidden: boolean;
   private $$shouldPlacehold: boolean = true;
 
-  get shouldPlacehold(): boolean {
+  public get shouldPlacehold(): boolean {
     return !this.initiallyHidden && this.$$shouldPlacehold;
   }
 
-  set shouldPlacehold(value: boolean) {
+  public set shouldPlacehold(value: boolean) {
     if (this.shouldPlacehold === value) {
       return;
     }
@@ -21,20 +23,23 @@ export default class Placeholder {
     this.update(true);
   }
 
-  constructor(
+  public constructor(
     element: HTMLElement,
     observe: boolean = true,
-    onUpdate: () => void = () => {}
+    onUpdate: () => void = noop
   ) {
     this.original = element;
-    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : () => {};
+    this.onUpdate = typeof onUpdate === 'function' ? onUpdate : noop;
 
     this.initialComputedStyles = window.getComputedStyle(this.original);
     this.initiallyHidden = this.initialComputedStyles.display === 'none';
+
     if (this.initiallyHidden) {
-      this.execWhileStucking(() => {
-        this.initialComputedStyles = window.getComputedStyle(this.original);
-      });
+      this.execWhileStucking(
+        (): void => {
+          this.initialComputedStyles = window.getComputedStyle(this.original);
+        }
+      );
     }
 
     this.element = Placeholder.createPlaceholderElement();
@@ -44,8 +49,9 @@ export default class Placeholder {
     Placeholder.wrap(this.original, this.element);
 
     if (observe) {
-      this.observer = Placeholder.createObserver(this.original, () =>
-        this.update()
+      this.observer = Placeholder.createObserver(
+        this.original,
+        (): void => this.update()
       );
     }
   }
@@ -62,9 +68,11 @@ export default class Placeholder {
   public updateRect(): ClientRect {
     this.cachedRect = this.element.getBoundingClientRect();
     if (this.initiallyHidden) {
-      this.execWhileStucking(() => {
-        this.cachedRect = this.element.getBoundingClientRect();
-      });
+      this.execWhileStucking(
+        (): void => {
+          this.cachedRect = this.element.getBoundingClientRect();
+        }
+      );
     }
     return this.cachedRect;
   }
@@ -134,11 +142,7 @@ export default class Placeholder {
     this.element.style.height = '';
   }
 
-  static detectSizeMutation({ type }: MutationRecord): boolean {
-    return type === 'childList' || type === 'attributes';
-  }
-
-  static createObserver(
+  private static createObserver(
     targetNode: HTMLElement,
     callback: () => void
   ): MutationObserver {
@@ -150,9 +154,12 @@ export default class Placeholder {
       );
     }
 
+    const detectSizeMutation = ({ type }: MutationRecord): boolean =>
+      type === 'childList' || type === 'attributes';
+
     const observer = new MutationObserver(
-      (mutations: Array<MutationRecord>) => {
-        const isMutated = mutations.some(Placeholder.detectSizeMutation);
+      (mutations: readonly MutationRecord[]): void => {
+        const isMutated = mutations.some(detectSizeMutation);
         if (isMutated) {
           callback();
         }
@@ -168,7 +175,7 @@ export default class Placeholder {
     return observer;
   }
 
-  static unwrap(target: HTMLElement): HTMLElement {
+  private static unwrap(target: HTMLElement): HTMLElement {
     const wrapper = target.parentNode;
 
     if (wrapper instanceof HTMLElement) {
@@ -182,7 +189,7 @@ export default class Placeholder {
     return target;
   }
 
-  static wrap(target: HTMLElement, wrapper: HTMLElement): HTMLElement {
+  private static wrap(target: HTMLElement, wrapper: HTMLElement): HTMLElement {
     if (target.parentNode !== wrapper) {
       target.insertAdjacentElement('beforebegin', wrapper);
       wrapper.appendChild(target);
@@ -190,7 +197,7 @@ export default class Placeholder {
     return wrapper;
   }
 
-  static createPlaceholderElement(tagName = 'div'): HTMLElement {
+  private static createPlaceholderElement(tagName = 'div'): HTMLElement {
     return document.createElement(tagName);
   }
 }

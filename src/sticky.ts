@@ -1,4 +1,5 @@
 import Placeholder from './placeholder';
+import { noop } from './utility';
 
 type MaybeHTMLElement = HTMLElement | Element | null | void;
 export type Selector = string;
@@ -6,33 +7,33 @@ type SelectorOrElement = Selector | HTMLElement;
 
 type PartialRequired<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
 
-export type StickyOptions = {
+export interface StickyOptions {
   marginTop?: number;
   wrapper?: SelectorOrElement;
   observe: boolean;
-};
+}
 
 export default class Sticky {
-  element: HTMLElement;
-  options: PartialRequired<StickyOptions, 'marginTop'>;
-  placeholder: Placeholder;
-  marginTop: number = 0;
-  isStickToBottom: boolean = false;
-  rect: ClientRect;
-  floor?: number;
+  public element: HTMLElement;
+  public options: PartialRequired<StickyOptions, 'marginTop'>;
+  public placeholder: Placeholder;
+  public marginTop: number = 0;
+  public isStickToBottom: boolean = false;
+  public rect: ClientRect;
+  public floor?: number;
 
   private $$wrapper!: HTMLElement;
   private $$additionalTop?: number;
 
-  static instances: Sticky[] = [];
-  static activated: boolean = false;
-  static bulkUpdateRequestId: number | null = null;
+  private static instances: Sticky[] = [];
+  private static activated: boolean = false;
+  private static bulkUpdateRequestId: number | null = null;
 
-  get isSticky(): boolean {
+  private get isSticky(): boolean {
     return this.element !== null && this.element.style.position === 'fixed';
   }
 
-  set isSticky(value: boolean) {
+  private set isSticky(value: boolean) {
     if (this.placeholder) {
       this.placeholder.shouldPlacehold = value;
     }
@@ -47,47 +48,26 @@ export default class Sticky {
     }
   }
 
-  get top(): number {
+  private get top(): number {
     return this.$$additionalTop || this.$$additionalTop === 0
       ? this.$$additionalTop
       : this.marginTop;
   }
 
-  set top(value: number) {
+  private set top(value: number) {
     this.$$additionalTop = value;
     this.element.style.top = value ? `${value}px` : `${this.marginTop}px`;
   }
 
-  get wrapper(): HTMLElement {
+  private get wrapper(): HTMLElement {
     return this.$$wrapper;
   }
 
-  private setWrapperFromSelectorOrElement(
-    selectorOrElement?: SelectorOrElement
-  ) {
-    if (!(document.body instanceof HTMLElement)) {
-      throw new TypeError(
-        '[Stuck.js] document.body is not HTMLElement in this environment'
-      );
-    }
-    const parent = (
-      (this.placeholder && this.placeholder.element) ||
-      this.element
-    ).parentElement;
-    this.$$wrapper = Sticky.normalizeElement(
-      selectorOrElement,
-      parent,
-      document.body
-    );
-    this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
-    this.options.wrapper = this.$$wrapper;
-  }
-
-  constructor(
+  public constructor(
     element: HTMLElement,
     options: StickyOptions = { observe: true },
     activate: boolean = true,
-    onUpdate: () => void = () => {}
+    onUpdate: () => void = noop
   ) {
     if (!element) {
       throw new Error('[Stuck-js] Invalid element given');
@@ -115,7 +95,28 @@ export default class Sticky {
     this.placeholder.shouldPlacehold = this.isSticky;
   }
 
-  static computeAbsoluteFloor(target: HTMLElement): number {
+  private setWrapperFromSelectorOrElement(
+    selectorOrElement?: SelectorOrElement
+  ): void {
+    if (!(document.body instanceof HTMLElement)) {
+      throw new TypeError(
+        '[Stuck.js] document.body is not HTMLElement in this environment'
+      );
+    }
+    const parent = (
+      (this.placeholder && this.placeholder.element) ||
+      this.element
+    ).parentElement;
+    this.$$wrapper = Sticky.normalizeElement(
+      selectorOrElement,
+      parent,
+      document.body
+    );
+    this.floor = Sticky.computeAbsoluteFloor(this.$$wrapper);
+    this.options.wrapper = this.$$wrapper;
+  }
+
+  private static computeAbsoluteFloor(target: HTMLElement): number {
     const absoluteBottom =
       target.getBoundingClientRect().bottom + window.pageYOffset;
     const { paddingBottom } = window.getComputedStyle(target);
@@ -124,7 +125,7 @@ export default class Sticky {
     return absoluteBottom - paddingBottomPixels;
   }
 
-  static normalizeElement(
+  private static normalizeElement(
     value?: SelectorOrElement,
     ...fallbacks: MaybeHTMLElement[]
   ): HTMLElement {
@@ -143,14 +144,16 @@ export default class Sticky {
     throw new TypeError('[Stuck-js] Could not find HTMLElement');
   }
 
-  static register(instance: Sticky): void {
+  public static register(instance: Sticky): void {
     Sticky.instances = [...Sticky.instances, instance];
   }
 
-  destroy(): void {
+  public destroy(): void {
     this.isSticky = false;
     this.placeholder.destroy();
-    Sticky.instances = Sticky.instances.filter(instance => instance !== this);
+    Sticky.instances = Sticky.instances.filter(
+      (instance): boolean => instance !== this
+    );
     delete this.placeholder;
     delete this.element;
     delete this.options;
@@ -159,11 +162,11 @@ export default class Sticky {
     }
   }
 
-  static destroyAll(): void {
-    Sticky.instances.forEach(instance => instance.destroy());
+  public static destroyAll(): void {
+    Sticky.instances.forEach((instance): void => instance.destroy());
   }
 
-  static activate(): void {
+  public static activate(): void {
     if (!Sticky.activated && Sticky.instances.length > 0) {
       window.addEventListener('scroll', Sticky.bulkUpdate);
       window.addEventListener('resize', Sticky.bulkPlaceholderUpdate);
@@ -172,7 +175,7 @@ export default class Sticky {
     Sticky.bulkUpdate();
   }
 
-  static deactivate(): void {
+  public static deactivate(): void {
     if (Sticky.activated) {
       window.removeEventListener('scroll', Sticky.bulkUpdate);
       window.removeEventListener('resize', Sticky.bulkPlaceholderUpdate);
@@ -180,30 +183,36 @@ export default class Sticky {
     }
   }
 
-  static bulkPlaceholderUpdate(): void {
+  private static bulkPlaceholderUpdate(): void {
     if (Sticky.bulkUpdateRequestId) {
       window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
     }
-    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
-      Sticky.instances.forEach(instance => {
-        instance.placeholder.update();
-        instance.update();
-      });
-    });
+    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(
+      (): void => {
+        Sticky.instances.forEach(
+          (instance): void => {
+            instance.placeholder.update();
+            instance.update();
+          }
+        );
+      }
+    );
   }
 
-  static bulkUpdate(): void {
+  public static bulkUpdate(): void {
     if (Sticky.bulkUpdateRequestId) {
       window.cancelAnimationFrame(Sticky.bulkUpdateRequestId);
     }
-    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(() => {
-      Sticky.instances.forEach(instance => instance.update());
-    });
+    Sticky.bulkUpdateRequestId = window.requestAnimationFrame(
+      (): void => {
+        Sticky.instances.forEach((instance): void => instance.update());
+      }
+    );
   }
 
-  computePositionTopFromRect(
+  private computePositionTopFromRect(
     rect: ClientRect = this.element.getBoundingClientRect()
-  ) {
+  ): void {
     this.rect = rect;
     this.floor = Sticky.computeAbsoluteFloor(this.wrapper);
 
@@ -230,7 +239,7 @@ export default class Sticky {
     }
   }
 
-  update(): void {
+  public update(): void {
     const placeholderRect = this.placeholder.element.getBoundingClientRect();
 
     if (!this.isSticky && this.marginTop > placeholderRect.top) {

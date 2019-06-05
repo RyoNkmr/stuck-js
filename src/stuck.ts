@@ -1,10 +1,13 @@
 import Sticky, { Selector, StickyOptions } from './sticky';
 
-type SelectorOption = { selector: Selector; element?: undefined };
-type ElementOption = {
+interface SelectorOption {
+  selector: Selector;
+  element?: undefined;
+}
+interface ElementOption {
   element: HTMLElement | HTMLElement[];
   selector?: undefined;
-};
+}
 type SelectorOrElementOption = SelectorOption | ElementOption;
 type StickySetting = StickyOptions & SelectorOrElementOption;
 
@@ -30,13 +33,13 @@ const getElementsArrayBySetting = (
 };
 
 export default class Stuck {
-  static stackingStickies: Sticky[] = [];
-  static registeredInstances: Sticky[] = [];
+  private defaultOptions!: StickyOptions;
+  private instances: Sticky[] = [];
 
-  defaultOptions!: StickyOptions;
-  instances: Sticky[] = [];
+  private static stackingStickies: Sticky[] = [];
+  private static registeredInstances: Sticky[] = [];
 
-  constructor(
+  public constructor(
     settings: StickySetting[] | StickySetting = [],
     defaultOptions: StickyOptions = { observe: true },
     sharedStacking: boolean = true
@@ -45,13 +48,13 @@ export default class Stuck {
     this.create(settings, sharedStacking);
   }
 
-  create(
-    source: Array<StickySetting> | StickySetting,
+  public create(
+    source: Readonly<StickySetting[] | StickySetting>,
     sharedStacking: boolean = true
   ): Sticky[] {
     const settings = Array.isArray(source) ? source : [source];
     const registered = settings.reduce(
-      (accumulator: Sticky[], setting) => [
+      (accumulator: Sticky[], setting): Sticky[] => [
         ...accumulator,
         ...this.register(setting, sharedStacking),
       ],
@@ -65,22 +68,20 @@ export default class Stuck {
     return registered;
   }
 
-  register(
+  private register(
     { selector, element, ...options }: StickySetting,
     sharedStacking: boolean = true
   ): Sticky[] {
-    const stickies = getElementsArrayBySetting({
+    const registeredInstanceElements: HTMLElement[] = Stuck.registeredInstances.map(
+      (instance): HTMLElement => instance.element
+    );
+    const stickies = getElementsArrayBySetting(({
       selector,
       element,
-    } as SelectorOrElementOption)
-      .filter(
-        (target: HTMLElement) =>
-          !Stuck.registeredInstances
-            .map(instance => instance.element)
-            .includes(target)
-      )
+    } as unknown) as SelectorOrElementOption)
+      .filter((target): boolean => !registeredInstanceElements.includes(target))
       .map(
-        (newElement: HTMLElement) =>
+        (newElement): Sticky =>
           new Sticky(
             newElement,
             { ...this.defaultOptions, ...options },
@@ -98,37 +99,48 @@ export default class Stuck {
     return stickies;
   }
 
-  destroy(): void {
+  public destroy(): void {
     Stuck.registeredInstances = Stuck.registeredInstances.filter(
-      registered => !this.instances.includes(registered)
+      (registered): boolean => !this.instances.includes(registered)
     );
     Stuck.stackingStickies = Stuck.stackingStickies.filter(
-      stacking => !this.instances.includes(stacking)
+      (stacking): boolean => !this.instances.includes(stacking)
     );
     if (Stuck.registeredInstances.length > 0) {
       Stuck.updateAndSort();
     }
-    this.instances.forEach(instance => instance.destroy());
+    this.instances.forEach((instance): void => instance.destroy());
     this.instances = [];
   }
 
-  static updateAndSort(): void {
+  private static updateAndSort(): void {
     Stuck.update();
     Stuck.registeredInstances.sort(
-      (before, after) =>
+      (before, after): number =>
         before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     );
   }
 
-  static update(): void {
+  public static update(): void {
+    interface StuckUpdateSource {
+      instance: Sticky;
+      rect: ClientRect;
+    }
     [...Stuck.stackingStickies]
-      .filter((instance, index, all) => all.indexOf(instance) === index)
-      .map(instance => ({
-        instance,
-        rect: instance.placeholder.updateRect(),
-      }))
-      .sort(({ rect: before }, { rect: after }) => before.top - after.top)
-      .reduce((ceiling, { instance }) => {
+      .filter(
+        (instance, index, all): boolean => all.indexOf(instance) === index
+      )
+      .map(
+        (instance): StuckUpdateSource => ({
+          instance,
+          rect: instance.placeholder.updateRect(),
+        })
+      )
+      .sort(
+        ({ rect: before }, { rect: after }): ClientRect['top'] =>
+          before.top - after.top
+      )
+      .reduce((ceiling, { instance }): ClientRect['top'] => {
         instance.marginTop = instance.options.marginTop + ceiling;
         return instance.rect.height + instance.marginTop;
       }, 0);
