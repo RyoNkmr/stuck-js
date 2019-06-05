@@ -1,35 +1,58 @@
-version: 2
+version: 2.1
 
 defaults: &defaults
   working_directory: ~/app
   docker:
-    - image: circleci/node:10
+    - image: circleci/node:12
+
+commands:
+  npm_install:
+    steps:
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            - dependency-cache-
+      - run: npm ci
+      - save_cache:
+          paths:
+            - ~/.npm
+          key: dependency-cache-{{ checksum "package.json" }}
 
 jobs:
   build:
     <<: *defaults
     steps:
       - checkout
+      - npm_install
       - restore_cache:
-          keys:
-            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
-            - dependency-cache-{{ .Branch }}-
-      - run: npm i
+          key: build-{{ .Branch }}-{{ .Revision }}
       - run: npm run build
       - save_cache:
           paths:
-            - node_modules
-            - lib
-          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+            - ./lib
+          key: build-{{ .Branch }}-{{ .Revision }}
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - restore_cache:
+          keys:
+            - lint-cache-{{ .Branch }}-{{ .Revision }}
+            - lint-cache-{{ .Branch }}
+            - lint-cache-
+      - run:
+          name: Run Lint
+          command: npm run ci:lint
+      - save_cache:
+          paths:
+            - ~/.cache/eslint
+          key: lint-cache-{{ .Branch }}-{{ .Revision }}
   test:
     <<: *defaults
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
-            - dependency-cache-{{ .Branch }}-
-      - run: npm i
+      - npm_install
       - run:
           name: Add dependency for puppeteer
           command: |
@@ -38,19 +61,46 @@ jobs:
               libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 \
               libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
               libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libnss3\
+      - restore_cache:
+          key: build-{{ .Branch }}-{{ .Revision }}
       - run:
           name: Run tests
-          command: npm test
-      - save_cache:
-          paths:
-            - node_modules
-          key: dependency-cache-{{ .Branch }}-{{ checksum "package.json" }}
+          command: npm run ci:test
+  release-dry:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - run: npx semantic-release -d
+  release:
+    <<: *defaults
+    steps:
+      - checkout
+      - npm_install
+      - run: npx semantic-release
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
+      - lint:
+          requires:
+            - build
       - test:
           requires:
             - build
+      - release-dry:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              ignore: master
+      - release:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master

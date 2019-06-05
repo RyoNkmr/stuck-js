@@ -17,7 +17,8 @@ describe('Sticky', () => {
         footer
       </footer>
     `);
-    await page.addStyleTag({ content: `
+    await page.addStyleTag({
+      content: `
       html, body {
         margin: 0;
         padding: 0;
@@ -43,7 +44,8 @@ describe('Sticky', () => {
         padding: 0;
         width: 100%;
       }
-    `});
+    `,
+    });
     await page.addScriptTag({ path: 'lib/index.js' });
     await page.evaluate(selector => {
       const { Sticky } = StuckJs;
@@ -54,7 +56,11 @@ describe('Sticky', () => {
 
   afterEach(async () => {
     await scrollTo(0, 0);
+    const watchDog = page.waitForFunction(
+      `window.innerWidth <= ${viewport.width}`
+    );
     await page.setViewport(viewport);
+    await watchDog;
     await page.reload();
   });
 
@@ -124,7 +130,10 @@ describe('Sticky', () => {
       expect(stickyRect.width).toBe(800);
       expect(placeholderRect.width).toBe(800);
 
+      const watchDog = page.waitForFunction('window.innerWidth <= 400');
       await page.setViewport({ ...viewport, width: 400 });
+      await watchDog;
+      await page.waitFor(60);
       const [stickyRectAfterResized] = await getRects('header');
       const [placeholderRectAfterResized] = await getParentRects('header');
       expect(stickyRectAfterResized.width).toBe(400);
