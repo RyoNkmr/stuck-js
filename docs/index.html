@@ -25,14 +25,14 @@
           <h1 id="Stuck_js">Stuck.js</h1>
           <section>
             <p>This is the one of sticky libraries handles stack of stickies and supports scrollX without dependencies(like jQuery)</p>
-            <p>And is not simply `position: sticky` polyfill.</p>
+            <p><a href="https://github.com/RyoNkmr/stuck-js">GitHub</a> / <a href="https://www.npmjs.com/stuck-js">npm</a></p>
           </section>
           <section>
             <h2 id="Installation">Installation</h2>
             <h3>npm module:</h3>
             <code data-type="bash">npm i -S stuck-js</code>
-            <code data-type="js">import { Stuck } from stuck-js</code>
-            <h3>&lt;script&gt; as umd module</h3>
+            <code data-type="js">import Stuck from 'stuck-js'</code>
+            <h3>&lt;script&gt;:</h3>
             <p>import from CDN</p>
             <code data-type="html">&lt;script src="https://unpkg.com/stuck-js/lib/index.js"&gt;&lt;/script&gt;</code>
             <p>or you can download from <a href="https://github.com/RyoNkmr/stuck-js/releases/tag/v0.0.1">Github release</a> and place `./lib/index.js` on your project</p>
@@ -77,7 +77,7 @@
          --></code>
             <p>if you use as umd package, this package will be included and bound with `window.StuckJs` or simply `StuckJs`.</p>
 
-          <p>or if you use npm and ES6</p>
+          <p>or if you use npm and ES6 or TypeScript</p>
           <code data-type="js">
 import { Stuck } from 'stuck-js';
 // or const StuckJs = require('stuck-js');
@@ -94,10 +94,20 @@ const instances = new Stuck([
             <code data-type="js"><!--
             -->new Stuck(settings, defaultOptions, sharedStacking);<!--
           --></code>
-            <p>the first "required" argument, `settings`, can be Array of Objects or a single Object. type settings</p>
+            <p>the first "required" argument, `settings`, can be Array of Objects or a single Object: </p>
             <code data-type="js"><!--
 -->{
   selector: string,
+  marginTop?: number,
+  wrapper?: HTMLElement|string,
+  placehold?: boolean,
+}
+<!--
+         --></code>
+            <p>you can specify HTMLElement(or Array&lt;HTMLElement&gt;) instead of the selector:</p>
+            <code data-type="js"><!--
+-->{
+  element: HTMLElement | HTMLElement[],
   marginTop?: number,
   wrapper?: HTMLElement|string,
   placehold?: boolean,
@@ -109,24 +119,21 @@ const instances = new Stuck([
               <span class="option__type">Number</span>
               <span class="option__default">0</span>
             </h3>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
+            <p>"marginTop" is the space between the element and the previous stacking element or the ceiling (as same as the top of window).</p>
 
             <h3 id="Options-wrapper" class="option">
               wrapper
               <span class="option__type">HTMLElement</span>
               <span class="option__default">parentElement|document.body</span>
             </h3>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
+            <p>"wrapper" is the root node of the stack behavior. the stickies will be make stack inside of the wrapper node.</p>
 
             <h3 id="Options-placehold" class="option">
               placehold
               <span class="option__type">boolean</span>
               <span class="option__default">true</span>
             </h3>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
-            <p>Ipsum laboriosam odio minus sunt officiis. Veniam sed saepe inventore labore ratione adipisci Sed unde sapiente porro accusamus quo Dolorem deserunt veniam ducimus neque velit. Esse saepe deserunt ipsam similique</p>
+            <p>You can create the "not-placehold" stickies with this option. "placehold: false" makes that the space where the original element is placed will be gone away while being sticky.</p>
           </section>
         </div>
         <aside id="js-sidebar" class="columns__sub">
@@ -176,11 +183,6 @@ const instances = new Stuck([
     </main>
     <footer>
       <div class="contents">
-        <ul class="side-list">
-          <li>
-            https://github.com/RyoNkmr/stuck-js
-          </li>
-        </ul>
         <p class="copyright">
           <small>Copyright 2018- Ryonkmr All Rights Reserved.</small>
         </p>
