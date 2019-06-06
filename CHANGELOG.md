@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/RyoNkmr/stuck-js/compare/v1.0.0...v2.0.0) (2019-06-06)
+
+
+### Code Refactoring
+
+* **stuck-js:** remove static methods and static properties and create singleton manager classes ([e3f2a5e](https://github.com/RyoNkmr/stuck-js/commit/e3f2a5e))
+
+
+### BREAKING CHANGES
+
+* **stuck-js:** the static methods on Stuck and Sticky moves into each
+manager classes.
+
 # [1.0.0](https://github.com/RyoNkmr/stuck-js/compare/v0.7.1...v1.0.0) (2019-06-05)
 
 
