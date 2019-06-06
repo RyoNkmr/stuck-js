@@ -1,5 +1,5 @@
 import { Stuck, StickySetting, SelectorOrElementOption } from './stuck'
-import { StuckManager, stuckManagerInstance } from './stuckManager'
+import { StuckManager, getStuckManagerInstance } from './stuckManager'
 import { Sticky, StickyOptions } from './sticky'
 import StickyImpl from './stickyImpl'
 
@@ -26,7 +26,7 @@ const getElementsArrayFromSetting = (
 
 export default class StuckImpl implements Stuck {
   private readonly $$defaultOptions!: StickyOptions
-  private readonly $$manager: StuckManager = stuckManagerInstance.register(this)
+  private readonly $$manager: StuckManager
   private $$instances: Sticky[] = []
 
   public constructor(
@@ -34,6 +34,7 @@ export default class StuckImpl implements Stuck {
     defaultOptions: StickyOptions = { observe: true },
     sharedStacking: boolean = true
   ) {
+    this.$$manager = getStuckManagerInstance(window).register(this)
     this.$$defaultOptions = defaultOptions
     this.create(settings, sharedStacking)
   }

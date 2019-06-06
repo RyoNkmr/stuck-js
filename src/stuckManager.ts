@@ -1,6 +1,6 @@
 import { Stuck } from './stuck'
 import { Sticky } from './sticky'
-import { stickyManagerInstance } from './stickyManager'
+import { getStickyManagerInstance } from './stickyManager'
 import { stableSort } from './utility'
 
 export interface StuckManager {
@@ -19,10 +19,15 @@ class StuckManagerImpl implements StuckManager {
   private $$stucks: Stuck[] = []
   private $$stickies: Sticky[] = []
   private $$stackingStickies: Sticky[] = []
+  private $$window: Window
 
-  public static getInstance(): StuckManager {
+  private constructor(_window: Window) {
+    this.$$window = _window
+  }
+
+  public static getInstance(_window: Window): StuckManager {
     if (!this.$$instance) {
-      this.$$instance = new StuckManagerImpl()
+      this.$$instance = new StuckManagerImpl(_window)
     }
     return this.$$instance
   }
@@ -57,7 +62,7 @@ class StuckManagerImpl implements StuckManager {
     if (stacking) {
       this.$$stackingStickies = [...this.$$stackingStickies, ...stickies]
     }
-    stickyManagerInstance.activate()
+    getStickyManagerInstance(this.$$window).activate()
     return this
   }
 
@@ -112,7 +117,7 @@ class StuckManagerImpl implements StuckManager {
         { instances: [], ceiling: 0 }
       ).instances
 
-    stickyManagerInstance.bulkUpdate()
+    getStickyManagerInstance(this.$$window).bulkUpdate()
 
     this.$$stickies = stableSort(
       this.stickies,
@@ -124,4 +129,5 @@ class StuckManagerImpl implements StuckManager {
   }
 }
 
-export const stuckManagerInstance = StuckManagerImpl.getInstance()
+export const getStuckManagerInstance = (_window: Window): StuckManager =>
+  StuckManagerImpl.getInstance(_window)

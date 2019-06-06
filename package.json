@@ -98,7 +98,8 @@
     },
     "ignore": [
       "docs/*.js",
-      "specs/*.js"
+      "specs/*.js",
+      "./*.js"
     ]
   }
 }
