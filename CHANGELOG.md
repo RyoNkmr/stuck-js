@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/RyoNkmr/stuck-js/compare/v2.0.0...v2.1.0) (2019-06-06)
+
+
+### Features
+
+* to trigger semantic-release ([6f4e74f](https://github.com/RyoNkmr/stuck-js/commit/6f4e74f))
+
 # [2.0.0](https://github.com/RyoNkmr/stuck-js/compare/v1.0.0...v2.0.0) (2019-06-06)
 
 
