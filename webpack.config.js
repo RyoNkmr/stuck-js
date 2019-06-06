@@ -1,5 +1,5 @@
-const path = require('path');
-const CompressionPlugin = require('compression-webpack-plugin');
+const path = require('path')
+const CompressionPlugin = require('compression-webpack-plugin')
 
 const prodBuild = {
   mode: 'production',
@@ -11,6 +11,7 @@ const prodBuild = {
     filename: '[name].js',
     library: 'StuckJs',
     libraryTarget: 'umd',
+    globalObject: 'this',
   },
   resolve: {
     extensions: ['.ts', '.js'],
@@ -25,7 +26,7 @@ const prodBuild = {
     ],
   },
   plugins: [new CompressionPlugin()],
-};
+}
 
 const docBuild = {
   ...prodBuild,
@@ -36,6 +37,6 @@ const docBuild = {
   },
   devtool: 'inline-source-map',
   plugins: [],
-};
+}
 
-module.exports = [prodBuild, docBuild];
+module.exports = [prodBuild, docBuild]

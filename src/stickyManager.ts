@@ -99,4 +99,5 @@ class StickyManagerImpl implements StickyManager {
   }
 }
 
-export const stickyManagerInstance = StickyManagerImpl.getInstance(window)
+export const getStickyManagerInstance = (_window: Window): StickyManager =>
+  StickyManagerImpl.getInstance(_window)

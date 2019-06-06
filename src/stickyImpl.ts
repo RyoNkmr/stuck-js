@@ -1,4 +1,4 @@
-import { StickyManager, stickyManagerInstance } from './stickyManager'
+import { StickyManager, getStickyManagerInstance } from './stickyManager'
 import {
   Sticky,
   StickyOptions,
@@ -50,9 +50,7 @@ export default class StickyImpl implements Sticky {
   private $$wrapper!: HTMLElement
   private $$additionalTop?: number
 
-  private readonly $$manager: StickyManager = stickyManagerInstance.register(
-    this
-  )
+  private readonly $$manager: StickyManager
 
   private get isSticky(): boolean {
     return this.element !== null && this.element.style.position === 'fixed'
@@ -97,6 +95,7 @@ export default class StickyImpl implements Sticky {
     if (!element) {
       throw new Error('[Stuck-js] Invalid element given')
     }
+    this.$$manager = getStickyManagerInstance(window).register(this)
     this.element = element
     this.rect = this.element.getBoundingClientRect()
     this.options = {
