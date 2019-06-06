@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/RyoNkmr/stuck-js/compare/v2.1.1...v2.1.2) (2019-06-06)
+
+
+### Bug Fixes
+
+* **typings:** typefix and update docds ([c545e7c](https://github.com/RyoNkmr/stuck-js/commit/c545e7c))
+
 ## [2.1.1](https://github.com/RyoNkmr/stuck-js/compare/v2.1.0...v2.1.1) (2019-06-06)
 
 
