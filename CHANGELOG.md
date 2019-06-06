@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/RyoNkmr/stuck-js/compare/v2.1.0...v2.1.1) (2019-06-06)
+
+
+### Bug Fixes
+
+* **stuck-js:** fix import-time undefined "window" error ([e53460c](https://github.com/RyoNkmr/stuck-js/commit/e53460c))
+
 # [2.1.0](https://github.com/RyoNkmr/stuck-js/compare/v2.0.0...v2.1.0) (2019-06-06)
 
 
