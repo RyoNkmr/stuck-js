@@ -8,7 +8,7 @@ export type PartialRequired<T, K extends keyof T> = Required<Pick<T, K>> &
 export interface StickyOptions {
   marginTop?: number
   wrapper?: SelectorOrElement
-  observe: boolean
+  observe?: boolean
 }
 
 export interface Sticky {
