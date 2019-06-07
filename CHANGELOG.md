@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/RyoNkmr/stuck-js/compare/v2.1.2...v2.1.3) (2019-06-07)
+
+
+### Bug Fixes
+
+* **stuck-js:** fix bug that the placeholder element will be not found before placed on DOM in some c ([e746118](https://github.com/RyoNkmr/stuck-js/commit/e746118)), closes [#25](https://github.com/RyoNkmr/stuck-js/issues/25)
+
 ## [2.1.2](https://github.com/RyoNkmr/stuck-js/compare/v2.1.1...v2.1.2) (2019-06-06)
 
 
