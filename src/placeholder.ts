@@ -44,9 +44,8 @@ export default class Placeholder {
 
     this.element = Placeholder.createPlaceholderElement()
     this.applyInitialStyles()
-    this.cachedRect = this.element && this.updateRect()
-
     Placeholder.wrap(this.original, this.element)
+    this.cachedRect = this.updateRect()
 
     if (observe) {
       this.observer = Placeholder.createObserver(
