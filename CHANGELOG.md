@@ -1,3 +1,10 @@
+## [2.1.4](https://github.com/RyoNkmr/stuck-js/compare/v2.1.3...v2.1.4) (2019-06-07)
+
+
+### Bug Fixes
+
+* **circleci:** broken release. nothing is published. ([34532aa](https://github.com/RyoNkmr/stuck-js/commit/34532aa))
+
 ## [2.1.3](https://github.com/RyoNkmr/stuck-js/compare/v2.1.2...v2.1.3) (2019-06-07)
 
 
