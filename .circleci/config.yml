@@ -77,6 +77,8 @@ jobs:
     steps:
       - checkout
       - npm_install
+      - restore_cache:
+          key: build-{{ .Branch }}-{{ .Revision }}
       - run: npx semantic-release
 
 workflows:
