@@ -188,40 +188,41 @@ const instances = new Stuck([
         </p>
       </div>
     </footer>
+    <script src="./polyfills.js"></script>
     <script src="./index.js"></script>
     <script>
       const Stuck = StuckJs.Stuck;
       const controller = new Stuck({ selector: '#js-sticky-controller', wrapper: '#js-sidebar', marginTop: 16 });
       let headerStackingContext = true;
       const options = {
-        header: init => (
-          init
-          ? [{ selector: '#js-sticky-header', marginTop: 0 }, {}, headerStackingContext]
-          : [{ selector: '#js-sticky-header', marginTop: 0 }, headerStackingContext]
-        ),
-        ads: () => [{ selector: '.js-sticky-ad', wrapper: '#js-sidebar', marginTop: 16 }],
+        header: function(init) {
+          return init
+            ? [{ selector: '#js-sticky-header', marginTop: 0 }, {}, headerStackingContext]
+            : [{ selector: '#js-sticky-header', marginTop: 0 }, headerStackingContext]
+        },
+        ads: function() { return [{ selector: '.js-sticky-ad', wrapper: '#js-sidebar', marginTop: 16 }] },
       };
       const instances = {
-        header: new Stuck(...options.header(true)),
-        ads: new Stuck(...options.ads()),
+        header: new (Stuck.bind.apply(Stuck, [null].concat(options.header(true)))),
+        ads: new (Stuck.bind.apply(Stuck, [null].concat(options.ads()))),
       };
-      document.querySelectorAll('.js-control').forEach(el => {
+      Array.prototype.slice(document.querySelectorAll('.js-control'), 0).forEach(function (el) {
         const data = el.dataset;
         const instance = instances[data.target];
         const method = instance[data.method].bind(instance);
-        el.addEventListener('click', () => {
+        el.addEventListener('click', function() {
           const params = data.method === 'create' ? options[data.target]() : [];
-          method(...params);
+          method.apply(instance, params);
           console.log(data.method + ' ' + data.target + ' instance');
         });
       });
       const box = document.getElementById('js-control-inner');
       const largeClassName = 'controller__inner--larger';
-      document.querySelector('.js-control-box').addEventListener('click', () => {
+      document.querySelector('.js-control-box').addEventListener('click', function() {
         box.classList.toggle(largeClassName);
         console.log('boxSize: ' + (box.classList.contains(largeClassName) ? 'large' : 'normal'));
       });
-      document.querySelector('.js-stack').addEventListener('click', () => {
+      document.querySelector('.js-stack').addEventListener('click', function() {
         headerStackingContext = !headerStackingContext;
         console.log('headerStackingContext: ' + headerStackingContext);
       });
