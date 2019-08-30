@@ -2,6 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=shield)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
 [![npm version](https://badge.fury.io/js/stuck-js.svg)](https://badge.fury.io/js/stuck-js)
+[![downloads](https://img.shields.io/npm/dt/stuck-js.svg)](https://www.npmjs.com/package/stuck-js)
 ![david-dm](https://david-dm.org/RyoNkmr/stuck-js.svg)
 
 A sticky library handles stack of stickies without dependencies(like jQuery)
