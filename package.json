@@ -42,7 +42,7 @@
     "@semantic-release/npm": "5.3.5",
     "@semantic-release/release-notes-generator": "7.3.5",
     "@types/expect-puppeteer": "3.3.1",
-    "@types/jest": "26.0.0",
+    "@types/jest": "26.0.24",
     "@types/jest-environment-puppeteer": "4.3.1",
     "@types/puppeteer": "2.0.1",
     "@typescript-eslint/eslint-plugin": "1.9.0",
