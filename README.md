@@ -1,9 +1,8 @@
 # Stuck.js
 
-[![CircleCI](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master.svg?style=shield)](https://circleci.com/gh/RyoNkmr/stuck-js/tree/master)
+[![CI](https://github.com/RyoNkmr/stuck-js/actions/workflows/ci.yml/badge.svg)](https://github.com/RyoNkmr/stuck-js/actions/workflows/ci.yml)
 [![npm version](https://badge.fury.io/js/stuck-js.svg)](https://badge.fury.io/js/stuck-js)
 [![downloads](https://img.shields.io/npm/dt/stuck-js.svg)](https://www.npmjs.com/package/stuck-js)
-![david-dm](https://david-dm.org/RyoNkmr/stuck-js.svg)
 
 A sticky library handles stack of stickies without dependencies(like jQuery)
 Demo: https://ryonkmr.github.io/stuck-js/
@@ -44,7 +43,7 @@ or [github releases](https://github.com/RyoNkmr/stuck-js/releases).
       <aside class="js-sticky-ad ad ad--02"><!-- ad contents --></aside>
     </div>
   </div>
-  <script src="lib/stuck.js"></script>
+  <script src="https://unpkg.com/stuck-js"></script>
   <script>
   const Stuck = StuckJs.Stuck;
   const instances = new Stuck([
@@ -53,5 +52,16 @@ or [github releases](https://github.com/RyoNkmr/stuck-js/releases).
   ], { marginTop: 10 });
   </script>
 </body>
+```
+
+or with a bundler:
+
+```js
+import { Stuck } from 'stuck-js'
+
+const instances = new Stuck([
+  { selector: '#js-header', marginTop: 0 },
+  { selector: '.js-sticky-ad', wrapper: '#js-sidebar' },
+], { marginTop: 10 })
 ```
 

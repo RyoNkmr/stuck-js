@@ -2,5 +2,5 @@ import Placeholder from './placeholder'
 import Sticky from './stickyImpl'
 import Stuck from './stuckImpl'
 
-export { Stuck, Sticky, Placeholder }
+export { Placeholder, Sticky, Stuck }
 export default Stuck

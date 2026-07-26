@@ -1,6 +1,6 @@
-import { Stuck } from './stuck'
-import { Sticky } from './sticky'
+import type { Sticky } from './sticky'
 import { getStickyManagerInstance } from './stickyManager'
+import type { Stuck } from './stuck'
 import { stableSort } from './utility'
 
 export interface StuckManager {
@@ -26,10 +26,10 @@ class StuckManagerImpl implements StuckManager {
   }
 
   public static getInstance(_window: Window): StuckManager {
-    if (!this.$$instance) {
-      this.$$instance = new StuckManagerImpl(_window)
+    if (!StuckManagerImpl.$$instance) {
+      StuckManagerImpl.$$instance = new StuckManagerImpl(_window)
     }
-    return this.$$instance
+    return StuckManagerImpl.$$instance
   }
 
   public register(stuck: Stuck): StuckManager {
@@ -67,7 +67,9 @@ class StuckManagerImpl implements StuckManager {
   }
 
   public destroyStickies(...stickies: Sticky[]): StuckManager {
-    stickies.forEach((instance): void => instance.destroy())
+    for (const instance of stickies) {
+      instance.destroy()
+    }
     this.$$stickies = this.$$stickies.filter(
       (sticky): boolean => !stickies.includes(sticky)
     )

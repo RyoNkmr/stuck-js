@@ -1,14 +1,14 @@
-import { StickyManager, getStickyManagerInstance } from './stickyManager'
-import {
+import Placeholder from './placeholder'
+import type {
+  PartialRequired,
+  SelectorOrElement,
   Sticky,
   StickyOptions,
-  SelectorOrElement,
-  PartialRequired,
 } from './sticky'
-import Placeholder from './placeholder'
+import { getStickyManagerInstance, type StickyManager } from './stickyManager'
 import { noop } from './utility'
 
-type MaybeHTMLElement = HTMLElement | Element | null | void
+type MaybeHTMLElement = HTMLElement | Element | null | undefined
 
 const normalizeElement = (
   value?: SelectorOrElement,
@@ -126,10 +126,7 @@ export default class StickyImpl implements Sticky {
         '[Stuck.js] document.body is not HTMLElement in this environment'
       )
     }
-    const parent = (
-      (this.placeholder && this.placeholder.element) ||
-      this.element
-    ).parentElement
+    const parent = (this.placeholder?.element || this.element).parentElement
     this.$$wrapper = normalizeElement(selectorOrElement, parent, document.body)
     this.floor = computeAbsoluteFloor(this.$$wrapper)
     this.options.wrapper = this.$$wrapper

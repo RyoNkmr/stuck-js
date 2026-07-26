@@ -1,4 +1,4 @@
-import { Sticky, Selector, StickyOptions } from './sticky'
+import type { Selector, Sticky, StickyOptions } from './sticky'
 
 interface SelectorOption {
   selector: Selector

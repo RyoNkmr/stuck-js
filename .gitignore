@@ -65,3 +65,7 @@ dist/
 .tern-port
 
 lib/
+
+# Vitest
+.vitest-attachments/
+specs/__screenshots__/

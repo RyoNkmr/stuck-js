@@ -1,4 +1,4 @@
-import { Sticky } from './sticky'
+import type { Sticky } from './sticky'
 
 export interface StickyManager {
   register(sticky: Sticky): StickyManager
@@ -23,10 +23,10 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public static getInstance(_window: Window): StickyManager {
-    if (!this.$$instance) {
-      this.$$instance = new StickyManagerImpl(_window)
+    if (!StickyManagerImpl.$$instance) {
+      StickyManagerImpl.$$instance = new StickyManagerImpl(_window)
     }
-    return this.$$instance
+    return StickyManagerImpl.$$instance
   }
 
   public register(sticky: Sticky): StickyManager {
@@ -50,14 +50,18 @@ class StickyManagerImpl implements StickyManager {
     }
     this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
       (): void => {
-        this.$$stickies.forEach((instance): void => instance.update())
+        for (const instance of this.$$stickies) {
+          instance.update()
+        }
       }
     )
     return this
   }
 
   public destroyAll(): StickyManager {
-    this.$$stickies.forEach((instance): void => instance.destroy())
+    for (const instance of this.$$stickies) {
+      instance.destroy()
+    }
     this.$$stickies = []
     this.deactivate()
     return this
@@ -88,12 +92,10 @@ class StickyManagerImpl implements StickyManager {
     }
     this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
       (): void => {
-        this.$$stickies.forEach(
-          (instance): void => {
-            instance.placeholder.update()
-            instance.update()
-          }
-        )
+        this.$$stickies.forEach((instance): void => {
+          instance.placeholder.update()
+          instance.update()
+        })
       }
     )
   }

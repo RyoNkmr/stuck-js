@@ -1,7 +1,7 @@
-import { Stuck, StickySetting, SelectorOrElementOption } from './stuck'
-import { StuckManager, getStuckManagerInstance } from './stuckManager'
-import { Sticky, StickyOptions } from './sticky'
+import type { Sticky, StickyOptions } from './sticky'
 import StickyImpl from './stickyImpl'
+import type { SelectorOrElementOption, StickySetting, Stuck } from './stuck'
+import { getStuckManagerInstance, type StuckManager } from './stuckManager'
 
 const getElementsArrayFromSetting = (
   option: SelectorOrElementOption
@@ -44,11 +44,9 @@ export default class StuckImpl implements Stuck {
     sharedStacking: boolean = true
   ): Sticky[] {
     const settings = Array.isArray(source) ? source : [source]
-    const registered = settings.reduce(
-      (accumulator: Sticky[], setting): Sticky[] => [
-        ...accumulator,
-        ...this.register(setting, sharedStacking),
-      ],
+    const registered = settings.reduce<Sticky[]>(
+      (accumulator, setting): Sticky[] =>
+        accumulator.concat(this.register(setting, sharedStacking)),
       []
     )
     if (registered.length === 0) {
@@ -63,10 +61,10 @@ export default class StuckImpl implements Stuck {
     sharedStacking: boolean = true
   ): Sticky[] {
     const registeredInstanceElements = this.$$manager.stickyElements
-    const stickies = getElementsArrayFromSetting(({
+    const stickies = getElementsArrayFromSetting({
       selector,
       element,
-    } as unknown) as SelectorOrElementOption)
+    } as unknown as SelectorOrElementOption)
       .filter((target): boolean => !registeredInstanceElements.includes(target))
       .map(
         (newElement): Sticky =>

@@ -35,11 +35,9 @@ export default class Placeholder {
     this.initiallyHidden = this.initialComputedStyles.display === 'none'
 
     if (this.initiallyHidden) {
-      this.execWhileStucking(
-        (): void => {
-          this.initialComputedStyles = window.getComputedStyle(this.original)
-        }
-      )
+      this.execWhileStucking((): void => {
+        this.initialComputedStyles = window.getComputedStyle(this.original)
+      })
     }
 
     this.element = Placeholder.createPlaceholderElement()
@@ -48,9 +46,8 @@ export default class Placeholder {
     this.cachedRect = this.updateRect()
 
     if (observe) {
-      this.observer = Placeholder.createObserver(
-        this.original,
-        (): void => this.update()
+      this.observer = Placeholder.createObserver(this.original, (): void =>
+        this.update()
       )
     }
   }
@@ -67,11 +64,9 @@ export default class Placeholder {
   public updateRect(): ClientRect {
     this.cachedRect = this.element.getBoundingClientRect()
     if (this.initiallyHidden) {
-      this.execWhileStucking(
-        (): void => {
-          this.cachedRect = this.element.getBoundingClientRect()
-        }
-      )
+      this.execWhileStucking((): void => {
+        this.cachedRect = this.element.getBoundingClientRect()
+      })
     }
     return this.cachedRect
   }
@@ -107,10 +102,8 @@ export default class Placeholder {
       return
     }
 
-    const {
-      width: originalWidth,
-      height: originalHeight,
-    } = this.original.getBoundingClientRect()
+    const { width: originalWidth, height: originalHeight } =
+      this.original.getBoundingClientRect()
     const widthChanged = originalWidth !== this.cachedRect.width
     const heightChanged = originalHeight !== this.cachedRect.height
 

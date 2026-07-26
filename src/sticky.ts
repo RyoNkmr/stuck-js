@@ -1,4 +1,4 @@
-import Placeholder from './placeholder'
+import type Placeholder from './placeholder'
 
 export type Selector = string
 export type SelectorOrElement = Selector | HTMLElement
