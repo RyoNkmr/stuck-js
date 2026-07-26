@@ -100,7 +100,7 @@ const instances = new Stuck([
   selector: string,
   marginTop?: number,
   wrapper?: HTMLElement|string,
-  placehold?: boolean,
+  observe?: boolean,
 }
 <!--
          --></code>
@@ -110,7 +110,7 @@ const instances = new Stuck([
   element: HTMLElement | HTMLElement[],
   marginTop?: number,
   wrapper?: HTMLElement|string,
-  placehold?: boolean,
+  observe?: boolean,
 }
 <!--
          --></code>
@@ -128,12 +128,12 @@ const instances = new Stuck([
             </h3>
             <p>"wrapper" is the root node of the stack behavior. the stickies will be make stack inside of the wrapper node.</p>
 
-            <h3 id="Options-placehold" class="option">
-              placehold
+            <h3 id="Options-observe" class="option">
+              observe
               <span class="option__type">boolean</span>
               <span class="option__default">true</span>
             </h3>
-            <p>You can create the "not-placehold" stickies with this option. "placehold: false" makes that the space where the original element is placed will be gone away while being sticky.</p>
+            <p>By default the sticky watches its own subtree with a MutationObserver so that the placeholder keeps matching the element size. Set "observe: false" to skip that observation when the element never changes its size.</p>
           </section>
         </div>
         <aside id="js-sidebar" class="columns__sub">
@@ -170,7 +170,7 @@ const instances = new Stuck([
                 <ul>
                   <li><a href="#Options-marginTop">marginTop</a></li>
                   <li><a href="#Options-wrapper">wrapper</a></li>
-                  <li><a href="#Options-placehold">placehold</a></li>
+                  <li><a href="#Options-observe">observe</a></li>
                 </ul>
               </li>
             </ul>
