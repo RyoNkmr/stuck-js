@@ -156,7 +156,7 @@ const instances = new Stuck([
               <button class="js-control" type="button" data-target="ads" data-method="create" title="Create a Stuck instance for the ads in this sidebar">Stick the ads</button>
               <button class="js-control" type="button" data-target="ads" data-method="destroy" title="Destroy that instance and put the ads back where they were">Unstick the ads</button>
               <button class="js-control-box" type="button" title="Resize this panel and watch the space it reserves follow along">Grow this panel</button>
-              <button class="js-stack" type="button" title="Whether the header shares a stacking context with the sidebar stickies. Applies the next time you stick the header">Shared stacking: on</button>
+              <button class="js-stack" type="button" title="Whether the header shares a stacking context with the sidebar stickies. The header instance is re-created so the change applies right away">Shared stacking: on</button>
             </div>
           </div>
           <div class="local-navigation">
@@ -269,6 +269,12 @@ const instances = new Stuck([
         stackButton.textContent = `Shared stacking: ${
           headerStackingContext ? 'on' : 'off'
         }`;
+        // sharedStacking は生成時に決まる設定なので、
+        // 生きているインスタンスは作り直して即座に反映させる
+        if (instances.header) {
+          instances.header.destroy();
+          instances.header = createInstance('header');
+        }
         console.log(`headerStackingContext: ${headerStackingContext}`);
       });
     </script>
