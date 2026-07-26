@@ -70,6 +70,3 @@ jobs:
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Trusted Publishing が使えない場合のフォールバック。
-          # npm 側で Trusted Publisher を設定済みなら未設定のままでよい
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
