@@ -35,7 +35,7 @@
             <h3>&lt;script&gt;:</h3>
             <p>Load it from a CDN:</p>
             <code data-type="html">&lt;script src="https://unpkg.com/stuck-js/lib/index.js"&gt;&lt;/script&gt;</code>
-            <p>Or download it from the <a href="https://github.com/RyoNkmr/stuck-js/releases">GitHub releases</a> and drop <code>./lib/index.js</code> into your project:</p>
+            <p>Or download it from the <a href="https://github.com/RyoNkmr/stuck-js/releases">GitHub releases</a> and drop <span class="code-inline">./lib/index.js</span> into your project:</p>
             <code data-type="html">&lt;script src="./vendor/stuck.js"&gt;&lt;/script&gt;</code>
           </section>
           <section>
@@ -75,7 +75,7 @@
   &lt;/script&gt;
 &lt;/body&gt;<!--
          --></code>
-            <p>Loaded as a UMD bundle, the library is exposed on the global scope as <code>window.StuckJs</code>, or simply <code>StuckJs</code>.</p>
+            <p>Loaded as a UMD bundle, the library is exposed on the global scope as <span class="code-inline">window.StuckJs</span>, or simply <span class="code-inline">StuckJs</span>.</p>
 
           <p>Or, with npm and ES modules or TypeScript:</p>
           <code data-type="js">
@@ -90,11 +90,11 @@ const instances = new Stuck([
           </section>
           <section>
             <h2 id="Options">Options</h2>
-            <p>Options are passed when you create a <code>Stuck</code> instance:</p>
+            <p>Options are passed when you create a <span class="code-inline">Stuck</span> instance:</p>
             <code data-type="js"><!--
             -->new Stuck(settings, defaultOptions, sharedStacking);<!--
           --></code>
-            <p>The first argument, <code>settings</code>, is the only required one. It takes either a single object or an array of them:</p>
+            <p>The first argument, <span class="code-inline">settings</span>, is the only required one. It takes either a single object or an array of them:</p>
             <code data-type="js"><!--
 -->{
   selector: string,
@@ -133,7 +133,7 @@ const instances = new Stuck([
               <span class="option__type">boolean</span>
               <span class="option__default">true</span>
             </h3>
-            <p>By default each sticky watches its own subtree with a <code>MutationObserver</code>, so the space it reserves keeps matching its size as the content changes. Set <code>observe: false</code> to skip that when the element never resizes.</p>
+            <p>By default each sticky watches its own subtree with a <span class="code-inline">MutationObserver</span>, so the space it reserves keeps matching its size as the content changes. Set <span class="code-inline">observe: false</span> to skip that when the element never resizes.</p>
           </section>
         </div>
         <aside id="js-sidebar" class="columns__sub">
@@ -151,12 +151,12 @@ const instances = new Stuck([
           </div>
           <div id="js-sticky-controller" class="controller" style="z-index: 300;">
             <div id="js-control-inner" class="controller__inner">
-              <button class="js-control" type="button" data-target="header" data-method="create">Header create</button>
-              <button class="js-control" type="button" data-target="header" data-method="destroy">Header destroy</button>
-              <button class="js-control" type="button" data-target="ads" data-method="create">Ads create</button>
-              <button class="js-control" type="button" data-target="ads" data-method="destroy">Ads destroy</button>
-              <button class="js-control-box" type="button">Change box size</button>
-              <button class="js-stack" type="button">Toggle header stacking option</button>
+              <button class="js-control" type="button" data-target="header" data-method="create" title="Create a Stuck instance for the page header">Stick the header</button>
+              <button class="js-control" type="button" data-target="header" data-method="destroy" title="Destroy that instance and put the header back where it was">Unstick the header</button>
+              <button class="js-control" type="button" data-target="ads" data-method="create" title="Create a Stuck instance for the ads in this sidebar">Stick the ads</button>
+              <button class="js-control" type="button" data-target="ads" data-method="destroy" title="Destroy that instance and put the ads back where they were">Unstick the ads</button>
+              <button class="js-control-box" type="button" title="Resize this panel and watch the space it reserves follow along">Grow this panel</button>
+              <button class="js-stack" type="button" title="Whether the header shares a stacking context with the sidebar stickies. Applies the next time you stick the header">Shared stacking: on</button>
             </div>
           </div>
           <div class="local-navigation">
@@ -236,14 +236,23 @@ const instances = new Stuck([
 
       const box = document.getElementById('js-control-inner');
       const largeClassName = 'controller__inner--larger';
-      document.querySelector('.js-control-box').addEventListener('click', () => {
+      const boxButton = document.querySelector('.js-control-box');
+      const isBoxLarge = () => box.classList.contains(largeClassName);
+
+      boxButton.addEventListener('click', () => {
         box.classList.toggle(largeClassName);
-        console.log(
-          `boxSize: ${box.classList.contains(largeClassName) ? 'large' : 'normal'}`
-        );
+        boxButton.textContent = isBoxLarge()
+          ? 'Shrink this panel'
+          : 'Grow this panel';
+        console.log(`boxSize: ${isBoxLarge() ? 'large' : 'normal'}`);
       });
-      document.querySelector('.js-stack').addEventListener('click', () => {
+
+      const stackButton = document.querySelector('.js-stack');
+      stackButton.addEventListener('click', () => {
         headerStackingContext = !headerStackingContext;
+        stackButton.textContent = `Shared stacking: ${
+          headerStackingContext ? 'on' : 'off'
+        }`;
         console.log(`headerStackingContext: ${headerStackingContext}`);
       });
     </script>
