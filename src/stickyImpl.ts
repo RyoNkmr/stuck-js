@@ -156,6 +156,12 @@ export default class StickyImpl implements Sticky {
     }
 
     if (!this.isStickToBottom) {
+      // marginTop はスタックへの出入りで変わるので、その都度追従させる。
+      // ここで返してしまうと、上に積まれていた sticky が消えても
+      // 再計算された marginTop が style.top に反映されない
+      if (this.$$additionalTop !== this.marginTop) {
+        this.top = this.marginTop
+      }
       return
     }
 

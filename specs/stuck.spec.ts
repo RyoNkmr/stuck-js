@@ -103,6 +103,35 @@ describe('Stuck', () => {
     })
   })
 
+  describe('recalculating the stack while scrolled', () => {
+    it('lifts the remaining stickies when one is destroyed', async () => {
+      const first = new Stuck({ selector: '#js-box00' })
+      new Stuck([{ selector: '#js-box01' }, { selector: '#js-box03' }])
+      await scrollTo(0, viewport.height)
+      await expect
+        .poll(() => topsOf('#js-box00', '#js-box01', '#js-box03'))
+        .toEqual([0, 250, 650])
+
+      first.destroy()
+      await expect
+        .poll(() => topsOf('#js-box01', '#js-box03'))
+        .toEqual([0, 400])
+    })
+
+    it('pushes the existing stickies down when one is added', async () => {
+      new Stuck([{ selector: '#js-box01' }, { selector: '#js-box03' }])
+      await scrollTo(0, viewport.height)
+      await expect
+        .poll(() => topsOf('#js-box01', '#js-box03'))
+        .toEqual([0, 400])
+
+      new Stuck({ selector: '#js-box00' })
+      await expect
+        .poll(() => topsOf('#js-box00', '#js-box01', '#js-box03'))
+        .toEqual([0, 250, 650])
+    })
+  })
+
   describe('Sticky instance creation', () => {
     describe('when Stuck instance is constructed', () => {
       it('creates an Sticky instance', () => {
