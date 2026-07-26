@@ -1,4 +1,4 @@
-import { getStuckManagerInstance } from '../src/stuckManager'
+import { destroyAll } from '../src/stack'
 
 /**
  * 更新は requestAnimationFrame でスケジュールされるので、
@@ -43,7 +43,7 @@ export const setContent = async (html: string, css: string): Promise<void> => {
  * ブラウザモードでは各テストの後に破棄しないと状態が次のテストへ漏れる。
  */
 export const cleanup = async (): Promise<void> => {
-  getStuckManagerInstance(window).destroyAll()
+  destroyAll()
   window.scroll(0, 0)
   document.body.innerHTML = ''
   await nextFrame()

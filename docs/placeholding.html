@@ -16,8 +16,12 @@
         height: 250px;
         background-color: #33a;
       }
-      .box:nth-child(n+2) {
+      /* sentinel が兄弟に加わるため nth-child ではなく直接指定する */
+      .box {
         margin-top: 30px;
+      }
+      #js-box00 {
+        margin-top: 0;
       }
       .box.box--large {
         height: 400px;

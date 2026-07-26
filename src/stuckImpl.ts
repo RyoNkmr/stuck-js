@@ -1,7 +1,7 @@
+import { join, registeredElements } from './stack'
 import type { Sticky, StickyOptions } from './sticky'
 import StickyImpl from './stickyImpl'
 import type { ElementSource, StickySetting, Stuck } from './stuck'
-import { getStuckManagerInstance, type StuckManager } from './stuckManager'
 
 const getElementsArrayFromSetting = ({
   selector,
@@ -22,7 +22,6 @@ const getElementsArrayFromSetting = ({
 
 export default class StuckImpl implements Stuck {
   private readonly $$defaultOptions: StickyOptions
-  private readonly $$manager: StuckManager
   private $$instances: Sticky[] = []
 
   public constructor(
@@ -30,7 +29,6 @@ export default class StuckImpl implements Stuck {
     defaultOptions: StickyOptions = { observe: true },
     sharedStacking: boolean = true
   ) {
-    this.$$manager = getStuckManagerInstance(window).register(this)
     this.$$defaultOptions = defaultOptions
     this.create(settings, sharedStacking)
   }
@@ -42,38 +40,35 @@ export default class StuckImpl implements Stuck {
     const settings = Array.isArray(source) ? source : [source]
     const registered = settings.reduce<Sticky[]>(
       (accumulator, setting): Sticky[] =>
-        accumulator.concat(this.register(setting, sharedStacking)),
+        accumulator.concat(this.register(setting)),
       []
     )
     if (registered.length === 0) {
       return []
     }
-    this.$$manager.update()
+
+    // 共有スタックに入らないものは、自分の marginTop の位置に固定されるだけで
+    // 他の sticky の高さを積まない
+    if (sharedStacking) {
+      join(...registered)
+    }
+
+    this.$$instances = [...this.$$instances, ...registered]
     return registered
   }
 
-  private register(
-    { selector, element, ...options }: StickySetting,
-    sharedStacking: boolean = true
-  ): Sticky[] {
-    const registeredInstanceElements = this.$$manager.stickyElements
-    const stickies = getElementsArrayFromSetting({ selector, element })
-      .filter(target => !registeredInstanceElements.includes(target))
+  private register({ selector, element, ...options }: StickySetting): Sticky[] {
+    const alreadyRegistered = registeredElements()
+    return getElementsArrayFromSetting({ selector, element })
+      .filter(target => !alreadyRegistered.includes(target))
       .map(
         (newElement): Sticky =>
           new StickyImpl(
             newElement,
             { ...this.$$defaultOptions, ...options },
-            false,
-            (): void => {
-              this.$$manager.update()
-            }
+            false
           )
       )
-
-    this.$$manager.addStickies(sharedStacking, ...stickies)
-    this.$$instances = [...this.$$instances, ...stickies]
-    return stickies
   }
 
   public get stickies(): readonly Sticky[] {
@@ -81,7 +76,10 @@ export default class StuckImpl implements Stuck {
   }
 
   public destroy(): void {
-    this.$$manager.unregister(this)
+    // 各 sticky が自分でレジストリから抜けて再計算を促す
+    for (const sticky of this.$$instances) {
+      sticky.destroy()
+    }
     this.$$instances = []
   }
 }
