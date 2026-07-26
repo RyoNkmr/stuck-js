@@ -85,6 +85,33 @@ describe('Sticky', () => {
     })
   })
 
+  describe('options', () => {
+    // #js-box01 は .box--large なので高さ 600px
+    const targetHeight = 600
+
+    beforeEach(async () => {
+      await setContent(boxesHtml, boxesCss)
+    })
+
+    it('observes mutations by default', () => {
+      const sticky = new Sticky(elementOf(target))
+      expect(sticky.placeholder.observer).toBeDefined()
+    })
+
+    it('does not observe mutations when observe is false', () => {
+      const sticky = new Sticky(elementOf(target), { observe: false })
+      expect(sticky.placeholder.observer).toBeUndefined()
+    })
+
+    it('keeps the space of the original element while being sticky', async () => {
+      new Sticky(elementOf(target))
+      await scrollTo(0, viewport.height)
+      await expect
+        .poll(() => parentRectsOf(target)[0].height)
+        .toBe(targetHeight)
+    })
+  })
+
   describe('placeholder', () => {
     beforeEach(async () => {
       await setContent(

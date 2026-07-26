@@ -105,7 +105,7 @@ export default class StickyImpl implements Sticky {
     this.setWrapperFromSelectorOrElement(this.options.wrapper)
     this.placeholder = new Placeholder(
       this.element,
-      this.options.observe || true,
+      this.options.observe ?? true,
       onUpdate
     )
     this.element.dataset.stuck = ''
