@@ -44,16 +44,17 @@ export default class StickyImpl implements Sticky {
   public placeholder: Placeholder
   public marginTop: number = 0
   public isStickToBottom: boolean = false
-  public rect: ClientRect
+  public rect: DOMRect
   public floor?: number
 
   private $$wrapper!: HTMLElement
   private $$additionalTop?: number
+  private $$destroyed: boolean = false
 
   private readonly $$manager: StickyManager
 
   private get isSticky(): boolean {
-    return this.element !== null && this.element.style.position === 'fixed'
+    return this.element.style.position === 'fixed'
   }
 
   private set isSticky(value: boolean) {
@@ -72,9 +73,7 @@ export default class StickyImpl implements Sticky {
   }
 
   private get top(): number {
-    return this.$$additionalTop || this.$$additionalTop === 0
-      ? this.$$additionalTop
-      : this.marginTop
+    return this.$$additionalTop ?? this.marginTop
   }
 
   private set top(value: number) {
@@ -107,7 +106,7 @@ export default class StickyImpl implements Sticky {
     this.placeholder = new Placeholder(
       this.element,
       this.options.observe || true,
-      onUpdate || this.$$manager.bulkUpdate
+      onUpdate
     )
     this.element.dataset.stuck = ''
 
@@ -133,13 +132,17 @@ export default class StickyImpl implements Sticky {
   }
 
   public destroy(): void {
+    if (this.$$destroyed) {
+      return
+    }
+    this.$$destroyed = true
     this.isSticky = false
     this.placeholder.destroy()
     this.$$manager.unregister(this)
   }
 
   private computePositionTopFromRect(
-    rect: ClientRect = this.element.getBoundingClientRect()
+    rect: DOMRect = this.element.getBoundingClientRect()
   ): void {
     this.rect = rect
     this.floor = computeAbsoluteFloor(this.wrapper)

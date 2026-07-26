@@ -35,9 +35,7 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public unregister(sticky: Sticky): StickyManager {
-    this.$$stickies = this.$$stickies.filter(
-      (instance): boolean => instance !== sticky
-    )
+    this.$$stickies = this.$$stickies.filter(instance => instance !== sticky)
     if (this.$$stickies.length < 1) {
       this.deactivate()
     }
@@ -45,16 +43,7 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public bulkUpdate(): StickyManager {
-    if (this.$$bulkUpdateRequestId) {
-      this.$$window.cancelAnimationFrame(this.$$bulkUpdateRequestId)
-    }
-    this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
-      (): void => {
-        for (const instance of this.$$stickies) {
-          instance.update()
-        }
-      }
-    )
+    this.scheduleUpdate(false)
     return this
   }
 
@@ -87,15 +76,22 @@ class StickyManagerImpl implements StickyManager {
   }
 
   private bulkPlaceholderUpdate(): void {
+    this.scheduleUpdate(true)
+  }
+
+  /** 更新は次のフレームまでまとめる。予約済みのものがあれば取り消して置き換える */
+  private scheduleUpdate(withPlaceholder: boolean): void {
     if (this.$$bulkUpdateRequestId) {
       this.$$window.cancelAnimationFrame(this.$$bulkUpdateRequestId)
     }
     this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
       (): void => {
-        this.$$stickies.forEach((instance): void => {
-          instance.placeholder.update()
+        for (const instance of this.$$stickies) {
+          if (withPlaceholder) {
+            instance.placeholder.update()
+          }
           instance.update()
-        })
+        }
       }
     )
   }

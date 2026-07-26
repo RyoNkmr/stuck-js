@@ -8,7 +8,6 @@ import {
   rectsOf,
   scrollTo,
   setContent,
-  track,
 } from './helpers'
 
 const viewport = { width: 800, height: 600 }
@@ -61,7 +60,7 @@ describe('Sticky', () => {
   describe('sticking', () => {
     beforeEach(async () => {
       await setContent(boxesHtml, boxesCss)
-      track(new Sticky(elementOf(target)))
+      new Sticky(elementOf(target))
     })
 
     it('preserves left position of sticky', async () => {
@@ -114,7 +113,7 @@ describe('Sticky', () => {
     ]
 
     it('update sticky and placeholder size on resize', async () => {
-      track(new Sticky(elementOf('header')))
+      new Sticky(elementOf('header'))
       await scrollTo(0, 1000)
       await expect
         .poll(widthsOfHeader)
@@ -171,13 +170,13 @@ describe('Sticky', () => {
     })
 
     it('without page height changing', async () => {
-      track(new Sticky(elementOf(target), { wrapper: '#sidebar' }))
+      new Sticky(elementOf(target), { wrapper: '#sidebar' })
       await scrollTo(0, 2400)
       await expect.poll(() => rectsOf(target)[0].top).toBe(-400)
     })
 
     it('with dynamically page height changing', async () => {
-      track(new Sticky(elementOf(target), { wrapper: '#sidebar' }))
+      new Sticky(elementOf(target), { wrapper: '#sidebar' })
       await scrollTo(0, 2400)
       elementOf('#main-column').style.height = '3600px'
       await scrollTo(0, 3400)

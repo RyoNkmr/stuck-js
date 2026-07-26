@@ -3,14 +3,7 @@ import { page } from 'vitest/browser'
 import { Stuck } from '../src'
 import type { StickySetting } from '../src/stuck'
 import { getStuckManagerInstance } from '../src/stuckManager'
-import {
-  cleanup,
-  elementOf,
-  scrollTo,
-  setContent,
-  topsOf,
-  track,
-} from './helpers'
+import { cleanup, elementOf, scrollTo, setContent, topsOf } from './helpers'
 
 const viewport = { width: 800, height: 600 }
 const containerHeight = 3000
@@ -67,13 +60,11 @@ describe('Stuck', () => {
 
   describe('position stacking', () => {
     it('no margin', async () => {
-      track(
-        new Stuck([
-          { selector: '#js-box00' },
-          { selector: '#js-box01' },
-          { selector: '#js-box03' },
-        ])
-      )
+      new Stuck([
+        { selector: '#js-box00' },
+        { selector: '#js-box01' },
+        { selector: '#js-box03' },
+      ])
       await scrollTo(0, viewport.height)
       await expect
         .poll(() => topsOf('#js-box00', '#js-box01', '#js-box03'))
@@ -81,15 +72,13 @@ describe('Stuck', () => {
     })
 
     it('with margin', async () => {
-      track(
-        new Stuck(
-          [
-            { selector: '#js-box00', marginTop: 20 },
-            { selector: '#js-box01' },
-            { selector: '#js-box03', marginTop: 100 },
-          ],
-          { marginTop: 10 }
-        )
+      new Stuck(
+        [
+          { selector: '#js-box00', marginTop: 20 },
+          { selector: '#js-box01' },
+          { selector: '#js-box03', marginTop: 100 },
+        ],
+        { marginTop: 10 }
       )
       await scrollTo(0, viewport.height)
       await expect
@@ -98,13 +87,11 @@ describe('Stuck', () => {
     })
 
     it('position stacking with element initially hidden', async () => {
-      track(
-        new Stuck([
-          { selector: '#js-box00' },
-          { selector: '#js-box02' },
-          { selector: '#js-box03' },
-        ])
-      )
+      new Stuck([
+        { selector: '#js-box00' },
+        { selector: '#js-box02' },
+        { selector: '#js-box03' },
+      ])
       await expect
         .poll(() => topsOf('#js-box00', '#js-box02', '#js-box03'))
         .toEqual([0, 0, 710])
@@ -119,34 +106,28 @@ describe('Stuck', () => {
   describe('Sticky instance creation', () => {
     describe('when Stuck instance is constructed', () => {
       it('creates an Sticky instance', () => {
-        const stuck = track(new Stuck({ selector: '#js-box01' }))
-        expect(stuck.stickies.length).toBe(1)
+        expect(new Stuck({ selector: '#js-box01' }).stickies.length).toBe(1)
       })
 
       it('creates an Sticky instance with specified HTMLelement', () => {
         const element = elementOf('#js-box01')
-        const stuck = track(new Stuck({ element }))
-        expect(stuck.stickies.length).toBe(1)
+        expect(new Stuck({ element }).stickies.length).toBe(1)
       })
 
       it('creates multiple Stickes at once', () => {
-        const stuck = track(new Stuck({ selector: '.js-box' }))
-        expect(stuck.stickies.length).toBe(2)
+        expect(new Stuck({ selector: '.js-box' }).stickies.length).toBe(2)
       })
 
       it('creates multiple Stickes with specified HTMLelements at once', () => {
-        const elements = document.querySelectorAll<HTMLElement>('.js-box')
-        // NodeList も受け付ける（型定義は HTMLElement[] のみ)
-        const stuck = track(
-          new Stuck({ element: elements as unknown as HTMLElement[] })
-        )
-        expect(stuck.stickies.length).toBe(2)
+        const element = document.querySelectorAll<HTMLElement>('.js-box')
+        expect(new Stuck({ element }).stickies.length).toBe(2)
       })
 
       it('creates Stickies by multiple settings', () => {
-        const stuck = track(
-          new Stuck([{ selector: '#js-box01' }, { selector: '.js-box' }])
-        )
+        const stuck = new Stuck([
+          { selector: '#js-box01' },
+          { selector: '.js-box' },
+        ])
         expect(stuck.stickies.length).toBe(3)
       })
 
@@ -157,7 +138,7 @@ describe('Stuck', () => {
 
     describe('after constructed(lazy registration)', () => {
       it('registers new Stickies', () => {
-        const stuck = track(new Stuck({ selector: '#js-box01' }))
+        const stuck = new Stuck({ selector: '#js-box01' })
         stuck.create({ selector: '.js-box' }, true)
         expect(stuck.stickies.length).toBe(3)
       })
@@ -173,14 +154,15 @@ describe('Stuck', () => {
     }
 
     it('when created', () => {
-      track(new Stuck([{ selector: '#js-box01' }, { selector: '.js-box' }]))
+      new Stuck([{ selector: '#js-box01' }, { selector: '.js-box' }])
       expect(indexOfStackingSticky('#js-box01')).toBe(1)
     })
 
     it('lazy registeration', () => {
-      const stuck = track(
-        new Stuck([{ selector: '#js-box03' }, { selector: '#js-box00' }])
-      )
+      const stuck = new Stuck([
+        { selector: '#js-box03' },
+        { selector: '#js-box00' },
+      ])
       stuck.create({ selector: '#js-box01' }, true)
       expect(indexOfStackingSticky('#js-box00')).toBe(0)
     })

@@ -1,18 +1,4 @@
-interface Destroyable {
-  destroy(): void
-}
-
-const instances: Destroyable[] = []
-
-/**
- * テスト終了時にまとめて破棄するインスタンスを登録する。
- * ライブラリは window ごとのシングルトンにインスタンスを溜めるため、
- * ブラウザモードでは各テストの後に必ず破棄しないと状態が次のテストへ漏れる。
- */
-export const track = <T extends Destroyable>(instance: T): T => {
-  instances.push(instance)
-  return instance
-}
+import { getStuckManagerInstance } from '../src/stuckManager'
 
 /**
  * 更新は requestAnimationFrame でスケジュールされるので、
@@ -52,10 +38,12 @@ export const setContent = async (html: string, css: string): Promise<void> => {
   await nextFrame()
 }
 
+/**
+ * ライブラリは window ごとのシングルトンにインスタンスを溜めるため、
+ * ブラウザモードでは各テストの後に破棄しないと状態が次のテストへ漏れる。
+ */
 export const cleanup = async (): Promise<void> => {
-  for (const instance of instances.splice(0).reverse()) {
-    instance.destroy()
-  }
+  getStuckManagerInstance(window).destroyAll()
   window.scroll(0, 0)
   document.body.innerHTML = ''
   await nextFrame()

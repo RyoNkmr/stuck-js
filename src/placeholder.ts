@@ -3,12 +3,13 @@ import { noop } from './utility'
 export default class Placeholder {
   public original: HTMLElement
   public element: HTMLElement
-  public cachedRect: ClientRect
+  public cachedRect: DOMRect
   public observer?: MutationObserver
   public onUpdate: () => void
   public initialComputedStyles: CSSStyleDeclaration
   public initiallyHidden: boolean
   private $$shouldPlacehold: boolean = true
+  private $$destroyed: boolean = false
 
   public get shouldPlacehold(): boolean {
     return !this.initiallyHidden && this.$$shouldPlacehold
@@ -53,6 +54,9 @@ export default class Placeholder {
   }
 
   public update(forceUpdate: boolean = false): void {
+    if (this.$$destroyed) {
+      return
+    }
     if (this.shouldPlacehold) {
       this.applyStyles(forceUpdate)
     } else {
@@ -61,7 +65,7 @@ export default class Placeholder {
     this.onUpdate()
   }
 
-  public updateRect(): ClientRect {
+  public updateRect(): DOMRect {
     this.cachedRect = this.element.getBoundingClientRect()
     if (this.initiallyHidden) {
       this.execWhileStucking((): void => {
@@ -72,6 +76,10 @@ export default class Placeholder {
   }
 
   public destroy(): void {
+    if (this.$$destroyed) {
+      return
+    }
+    this.$$destroyed = true
     if (this.observer) {
       this.observer.disconnect()
       delete this.observer
@@ -98,10 +106,6 @@ export default class Placeholder {
   }
 
   private applyStyles(forceUpdate: boolean = false): void {
-    if (!this.original || !this.element) {
-      return
-    }
-
     const { width: originalWidth, height: originalHeight } =
       this.original.getBoundingClientRect()
     const widthChanged = originalWidth !== this.cachedRect.width
@@ -123,9 +127,6 @@ export default class Placeholder {
   }
 
   private removeStyles(): void {
-    if (!this.original || !this.element) {
-      return
-    }
     this.element.style.width = ''
     this.element.style.height = ''
   }

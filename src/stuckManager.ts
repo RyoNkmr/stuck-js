@@ -1,7 +1,6 @@
 import type { Sticky } from './sticky'
 import { getStickyManagerInstance } from './stickyManager'
 import type { Stuck } from './stuck'
-import { stableSort } from './utility'
 
 export interface StuckManager {
   stickies: readonly Sticky[]
@@ -11,6 +10,7 @@ export interface StuckManager {
   unregister(stuck: Stuck): StuckManager
   addStickies(stacking: boolean, ...stickies: Sticky[]): StuckManager
   destroyStickies(...stickies: Sticky[]): StuckManager
+  destroyAll(): StuckManager
   update(): StuckManager
 }
 
@@ -39,9 +39,7 @@ class StuckManagerImpl implements StuckManager {
 
   public unregister(stuck: Stuck): StuckManager {
     this.destroyStickies(...stuck.stickies)
-    this.$$stucks = this.$$stucks.filter(
-      (instance): boolean => instance !== stuck
-    )
+    this.$$stucks = this.$$stucks.filter(instance => instance !== stuck)
     return this
   }
 
@@ -50,7 +48,7 @@ class StuckManagerImpl implements StuckManager {
   }
 
   public get stickyElements(): readonly HTMLElement[] {
-    return this.$$stickies.map((sticky): HTMLElement => sticky.element)
+    return this.$$stickies.map(sticky => sticky.element)
   }
 
   public get stackingStickies(): readonly Sticky[] {
@@ -71,10 +69,10 @@ class StuckManagerImpl implements StuckManager {
       instance.destroy()
     }
     this.$$stickies = this.$$stickies.filter(
-      (sticky): boolean => !stickies.includes(sticky)
+      sticky => !stickies.includes(sticky)
     )
     this.$$stackingStickies = this.$$stackingStickies.filter(
-      (sticky): boolean => !stickies.includes(sticky)
+      sticky => !stickies.includes(sticky)
     )
     if (this.$$stackingStickies.length > 0) {
       this.update()
@@ -82,48 +80,39 @@ class StuckManagerImpl implements StuckManager {
     return this
   }
 
+  /** 登録済みの Stuck と Sticky をすべて破棄し、シングルトンを初期状態に戻す */
+  public destroyAll(): StuckManager {
+    this.destroyStickies(...this.$$stickies)
+    this.$$stucks = []
+    this.$$stickies = []
+    this.$$stackingStickies = []
+    getStickyManagerInstance(this.$$window).destroyAll()
+    return this
+  }
+
   public update(): StuckManager {
-    interface StuckUpdateSource {
-      instance: Sticky
-      rect: ClientRect
+    const sorted = Array.from(new Set(this.stackingStickies))
+      .map(instance => ({
+        instance,
+        rect: instance.placeholder.updateRect(),
+      }))
+      .sort((before, after) => before.rect.top - after.rect.top)
+
+    // 上にあるものから順に、直前の要素の下端を次の要素の marginTop に積む
+    let ceiling = 0
+    const stacking: Sticky[] = []
+    for (const { instance } of sorted) {
+      instance.marginTop = instance.options.marginTop + ceiling
+      ceiling = instance.rect.height + instance.marginTop
+      stacking.push(instance)
     }
-    interface StuckSortingAccumulator {
-      instances: Sticky[]
-      ceiling: ClientRect['top']
-    }
-    this.$$stackingStickies = this.stackingStickies
-      .filter(
-        (instance, index, all): boolean => all.indexOf(instance) === index
-      )
-      .map(
-        (instance): StuckUpdateSource => ({
-          instance,
-          rect: instance.placeholder.updateRect(),
-        })
-      )
-      .sort(
-        ({ rect: before }, { rect: after }): ClientRect['top'] =>
-          before.top - after.top
-      )
-      .reduce(
-        (
-          { instances, ceiling }: StuckSortingAccumulator,
-          { instance }
-        ): StuckSortingAccumulator => {
-          instance.marginTop = instance.options.marginTop + ceiling
-          return {
-            instances: [...instances, instance],
-            ceiling: instance.rect.height + instance.marginTop,
-          }
-        },
-        { instances: [], ceiling: 0 }
-      ).instances
+    this.$$stackingStickies = stacking
 
     getStickyManagerInstance(this.$$window).bulkUpdate()
 
-    this.$$stickies = stableSort(
-      this.stickies,
-      (before: Sticky, after: Sticky): number =>
+    // Array.prototype.sort は ES2019 以降、安定ソートが保証されている
+    this.$$stickies = [...this.stickies].sort(
+      (before, after) =>
         before.placeholder.cachedRect.top - after.placeholder.cachedRect.top
     )
 

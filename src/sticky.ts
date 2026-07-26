@@ -17,7 +17,7 @@ export interface Sticky {
   placeholder: Placeholder
   marginTop: number
   isStickToBottom: boolean
-  rect: ClientRect
+  rect: DOMRect
   floor?: number
   destroy(): void
   update(): void
