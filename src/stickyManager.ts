@@ -1,4 +1,4 @@
-import { Sticky } from './sticky'
+import type { Sticky } from './sticky'
 
 export interface StickyManager {
   register(sticky: Sticky): StickyManager
@@ -23,10 +23,10 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public static getInstance(_window: Window): StickyManager {
-    if (!this.$$instance) {
-      this.$$instance = new StickyManagerImpl(_window)
+    if (!StickyManagerImpl.$$instance) {
+      StickyManagerImpl.$$instance = new StickyManagerImpl(_window)
     }
-    return this.$$instance
+    return StickyManagerImpl.$$instance
   }
 
   public register(sticky: Sticky): StickyManager {
@@ -35,9 +35,7 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public unregister(sticky: Sticky): StickyManager {
-    this.$$stickies = this.$$stickies.filter(
-      (instance): boolean => instance !== sticky
-    )
+    this.$$stickies = this.$$stickies.filter(instance => instance !== sticky)
     if (this.$$stickies.length < 1) {
       this.deactivate()
     }
@@ -45,19 +43,14 @@ class StickyManagerImpl implements StickyManager {
   }
 
   public bulkUpdate(): StickyManager {
-    if (this.$$bulkUpdateRequestId) {
-      this.$$window.cancelAnimationFrame(this.$$bulkUpdateRequestId)
-    }
-    this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
-      (): void => {
-        this.$$stickies.forEach((instance): void => instance.update())
-      }
-    )
+    this.scheduleUpdate(false)
     return this
   }
 
   public destroyAll(): StickyManager {
-    this.$$stickies.forEach((instance): void => instance.destroy())
+    for (const instance of this.$$stickies) {
+      instance.destroy()
+    }
     this.$$stickies = []
     this.deactivate()
     return this
@@ -83,17 +76,22 @@ class StickyManagerImpl implements StickyManager {
   }
 
   private bulkPlaceholderUpdate(): void {
+    this.scheduleUpdate(true)
+  }
+
+  /** 更新は次のフレームまでまとめる。予約済みのものがあれば取り消して置き換える */
+  private scheduleUpdate(withPlaceholder: boolean): void {
     if (this.$$bulkUpdateRequestId) {
       this.$$window.cancelAnimationFrame(this.$$bulkUpdateRequestId)
     }
     this.$$bulkUpdateRequestId = this.$$window.requestAnimationFrame(
       (): void => {
-        this.$$stickies.forEach(
-          (instance): void => {
+        for (const instance of this.$$stickies) {
+          if (withPlaceholder) {
             instance.placeholder.update()
-            instance.update()
           }
-        )
+          instance.update()
+        }
       }
     )
   }

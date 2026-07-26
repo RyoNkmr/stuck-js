@@ -192,6 +192,14 @@ code[data-type="bash"]::before {
   margin-right: .5em;
 }
 
+.code-inline {
+  background-color: rgba(255,255,255, .7);
+  color: #038;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
 .option {
   display: flex;
   align-items: center;
@@ -310,6 +318,37 @@ footer .contents {
   padding: 16px;
   border-radius: 4px;
   box-sizing: border-box;
+  font-family: inherit;
+  font-size: .8em;
+  color: #038;
+  background-color: rgba(255,255,255, .85);
+  border: 1px solid rgba(0,51,136, .25);
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.controller button:hover {
+  background-color: #fff;
+  border-color: #038;
+}
+
+.controller button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.controller button:active {
+  background-color: #e6ecf8;
+  transform: translateY(1px);
+}
+
+.controller button:disabled,
+.controller button:disabled:hover {
+  background-color: rgba(255,255,255, .4);
+  border-color: transparent;
+  color: rgba(0,51,136, .4);
+  cursor: default;
+  transform: none;
 }
 
 .controller button:nth-child(n+2) {

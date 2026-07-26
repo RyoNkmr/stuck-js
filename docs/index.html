@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Stuck-js</title>
+    <title>Stuck.js</title>
     <link preload href="https://fonts.googleapis.com/css?family=Oxygen+Mono" rel="stylesheet">
     <link href="./style.css" rel="stylesheet">
   </head>
@@ -24,7 +24,7 @@
         <div class="columns__main">
           <h1 id="Stuck_js">Stuck.js</h1>
           <section>
-            <p>This is the one of sticky libraries handles stack of stickies and supports scrollX without dependencies(like jQuery)</p>
+            <p>A sticky library that stacks multiple sticky elements on top of each other and keeps them aligned when the page scrolls horizontally. No dependencies — jQuery not required.</p>
             <p><a href="https://github.com/RyoNkmr/stuck-js">GitHub</a> / <a href="https://www.npmjs.com/stuck-js">npm</a></p>
           </section>
           <section>
@@ -33,9 +33,9 @@
             <code data-type="bash">npm i -S stuck-js</code>
             <code data-type="js">import Stuck from 'stuck-js'</code>
             <h3>&lt;script&gt;:</h3>
-            <p>import from CDN</p>
+            <p>Load it from a CDN:</p>
             <code data-type="html">&lt;script src="https://unpkg.com/stuck-js/lib/index.js"&gt;&lt;/script&gt;</code>
-            <p>or you can download from <a href="https://github.com/RyoNkmr/stuck-js/releases/tag/v0.0.1">Github release</a> and place `./lib/index.js` on your project</p>
+            <p>Or download it from the <a href="https://github.com/RyoNkmr/stuck-js/releases">GitHub releases</a> and drop <span class="code-inline">./lib/index.js</span> into your project:</p>
             <code data-type="html">&lt;script src="./vendor/stuck.js"&gt;&lt;/script&gt;</code>
           </section>
           <section>
@@ -75,9 +75,9 @@
   &lt;/script&gt;
 &lt;/body&gt;<!--
          --></code>
-            <p>if you use as umd package, this package will be included and bound with `window.StuckJs` or simply `StuckJs`.</p>
+            <p>Loaded as a UMD bundle, the library is exposed on the global scope as <span class="code-inline">window.StuckJs</span>, or simply <span class="code-inline">StuckJs</span>.</p>
 
-          <p>or if you use npm and ES6 or TypeScript</p>
+          <p>Or, with npm and ES modules or TypeScript:</p>
           <code data-type="js">
 import { Stuck } from 'stuck-js';
 // or const StuckJs = require('stuck-js');
@@ -90,27 +90,27 @@ const instances = new Stuck([
           </section>
           <section>
             <h2 id="Options">Options</h2>
-            <p>you can use to create `Stuck` instance, for example:</p>
+            <p>Options are passed when you create a <span class="code-inline">Stuck</span> instance:</p>
             <code data-type="js"><!--
             -->new Stuck(settings, defaultOptions, sharedStacking);<!--
           --></code>
-            <p>the first "required" argument, `settings`, can be Array of Objects or a single Object: </p>
+            <p>The first argument, <span class="code-inline">settings</span>, is the only required one. It takes either a single object or an array of them:</p>
             <code data-type="js"><!--
 -->{
   selector: string,
   marginTop?: number,
   wrapper?: HTMLElement|string,
-  placehold?: boolean,
+  observe?: boolean,
 }
 <!--
          --></code>
-            <p>you can specify HTMLElement(or Array&lt;HTMLElement&gt;) instead of the selector:</p>
+            <p>You can pass elements directly instead of a selector:</p>
             <code data-type="js"><!--
 -->{
-  element: HTMLElement | HTMLElement[],
+  element: HTMLElement | HTMLElement[] | NodeList,
   marginTop?: number,
   wrapper?: HTMLElement|string,
-  placehold?: boolean,
+  observe?: boolean,
 }
 <!--
          --></code>
@@ -119,31 +119,31 @@ const instances = new Stuck([
               <span class="option__type">Number</span>
               <span class="option__default">0</span>
             </h3>
-            <p>"marginTop" is the space between the element and the previous stacking element or the ceiling (as same as the top of window).</p>
+            <p>The gap left above the element once it sticks — measured from the bottom of the sticky above it, or from the top of the window when nothing is stacked above.</p>
 
             <h3 id="Options-wrapper" class="option">
               wrapper
               <span class="option__type">HTMLElement</span>
               <span class="option__default">parentElement|document.body</span>
             </h3>
-            <p>"wrapper" is the root node of the stack behavior. the stickies will be make stack inside of the wrapper node.</p>
+            <p>The node that bounds the stacking behaviour. Stickies stack within their wrapper and stop once they reach its bottom edge, so they never escape the section they belong to.</p>
 
-            <h3 id="Options-placehold" class="option">
-              placehold
+            <h3 id="Options-observe" class="option">
+              observe
               <span class="option__type">boolean</span>
               <span class="option__default">true</span>
             </h3>
-            <p>You can create the "not-placehold" stickies with this option. "placehold: false" makes that the space where the original element is placed will be gone away while being sticky.</p>
+            <p>By default each sticky watches its own subtree with a <span class="code-inline">MutationObserver</span>, so the space it reserves keeps matching its size as the content changes. Set <span class="code-inline">observe: false</span> to skip that when the element never resizes.</p>
           </section>
         </div>
         <aside id="js-sidebar" class="columns__sub">
           <section>
             <h2>Author</h2>
             <p>
-              Hi, I'm Ryonkmr, a frontend developer in Tokyo.
-              Sometimes being an designer or illustrator.
-              I love Adobe Photoshop, Illustrator, javascript and
-              vim(but I'm not vimmer but viginner😨).
+              Hi, I'm Ryonkmr, a frontend developer in Tokyo —
+              and sometimes a designer or illustrator.
+              I love Adobe Photoshop, Illustrator, JavaScript and
+              Vim (though I'm not a vimmer yet, just a viginner 😨).
             </p>
           </section>
           <div class="ad ad--rectangle js-sticky-ad">
@@ -151,12 +151,12 @@ const instances = new Stuck([
           </div>
           <div id="js-sticky-controller" class="controller" style="z-index: 300;">
             <div id="js-control-inner" class="controller__inner">
-              <button class="js-control" type="button" data-target="header" data-method="create">Header create</button>
-              <button class="js-control" type="button" data-target="header" data-method="destroy">Header destroy</button>
-              <button class="js-control" type="button" data-target="ads" data-method="create">Ads create</button>
-              <button class="js-control" type="button" data-target="ads" data-method="destroy">Ads destroy</button>
-              <button class="js-control-box" type="button">Change box size</button>
-              <button class="js-stack" type="button">Toggle header stacking option</button>
+              <button class="js-control" type="button" data-target="header" data-method="create" title="Create a Stuck instance for the page header">Stick the header</button>
+              <button class="js-control" type="button" data-target="header" data-method="destroy" title="Destroy that instance and put the header back where it was">Unstick the header</button>
+              <button class="js-control" type="button" data-target="ads" data-method="create" title="Create a Stuck instance for the ads in this sidebar">Stick the ads</button>
+              <button class="js-control" type="button" data-target="ads" data-method="destroy" title="Destroy that instance and put the ads back where they were">Unstick the ads</button>
+              <button class="js-control-box" type="button" title="Resize this panel and watch the space it reserves follow along">Grow this panel</button>
+              <button class="js-stack" type="button" title="Whether the header shares a stacking context with the sidebar stickies. The header instance is re-created so the change applies right away">Shared stacking: on</button>
             </div>
           </div>
           <div class="local-navigation">
@@ -170,7 +170,7 @@ const instances = new Stuck([
                 <ul>
                   <li><a href="#Options-marginTop">marginTop</a></li>
                   <li><a href="#Options-wrapper">wrapper</a></li>
-                  <li><a href="#Options-placehold">placehold</a></li>
+                  <li><a href="#Options-observe">observe</a></li>
                 </ul>
               </li>
             </ul>
@@ -191,40 +191,91 @@ const instances = new Stuck([
     <script src="./polyfills.js"></script>
     <script src="./index.js"></script>
     <script>
-      const Stuck = StuckJs.Stuck;
-      const controller = new Stuck({ selector: '#js-sticky-controller', wrapper: '#js-sidebar', marginTop: 16 });
+      const { Stuck } = StuckJs;
+
+      const controller = new Stuck({
+        selector: '#js-sticky-controller',
+        wrapper: '#js-sidebar',
+        marginTop: 16,
+      });
+
       let headerStackingContext = true;
-      const options = {
-        header: function(init) {
-          return init
-            ? [{ selector: '#js-sticky-header', marginTop: 0 }, {}, headerStackingContext]
-            : [{ selector: '#js-sticky-header', marginTop: 0 }, headerStackingContext]
-        },
-        ads: function() { return [{ selector: '.js-sticky-ad', wrapper: '#js-sidebar', marginTop: 16 }] },
+
+      const settings = {
+        header: () => ({ selector: '#js-sticky-header', marginTop: 0 }),
+        ads: () => ({
+          selector: '.js-sticky-ad',
+          wrapper: '#js-sidebar',
+          marginTop: 16,
+        }),
       };
+
+      const createInstance = target =>
+        new Stuck(
+          settings[target](),
+          {},
+          target === 'header' ? headerStackingContext : true
+        );
+
       const instances = {
-        header: new (Stuck.bind.apply(Stuck, [null].concat(options.header(true)))),
-        ads: new (Stuck.bind.apply(Stuck, [null].concat(options.ads()))),
+        header: createInstance('header'),
+        ads: createInstance('ads'),
       };
-      Array.prototype.slice(document.querySelectorAll('.js-control'), 0).forEach(function (el) {
-        const data = el.dataset;
-        const instance = instances[data.target];
-        const method = instance[data.method].bind(instance);
-        el.addEventListener('click', function() {
-          const params = data.method === 'create' ? options[data.target]() : [];
-          method.apply(instance, params);
-          console.log(data.method + ' ' + data.target + ' instance');
+
+      const controls = document.querySelectorAll('.js-control');
+
+      // 生きているインスタンスに対応するボタンだけを押せるようにして、
+      // スクロール前でも今どちらの状態なのかが分かるようにする
+      const updateControls = () => {
+        controls.forEach(el => {
+          const { target, method } = el.dataset;
+          const isActive = Boolean(instances[target]);
+          el.disabled = method === 'create' ? isActive : !isActive;
+        });
+      };
+
+      controls.forEach(el => {
+        const { target, method } = el.dataset;
+        el.addEventListener('click', () => {
+          if (method === 'create') {
+            instances[target] = createInstance(target);
+          } else {
+            instances[target].destroy();
+            instances[target] = null;
+          }
+          updateControls();
+          console.log(`${method} ${target} instance`);
         });
       });
+
+      updateControls();
+
       const box = document.getElementById('js-control-inner');
       const largeClassName = 'controller__inner--larger';
-      document.querySelector('.js-control-box').addEventListener('click', function() {
+      const boxButton = document.querySelector('.js-control-box');
+      const isBoxLarge = () => box.classList.contains(largeClassName);
+
+      boxButton.addEventListener('click', () => {
         box.classList.toggle(largeClassName);
-        console.log('boxSize: ' + (box.classList.contains(largeClassName) ? 'large' : 'normal'));
+        boxButton.textContent = isBoxLarge()
+          ? 'Shrink this panel'
+          : 'Grow this panel';
+        console.log(`boxSize: ${isBoxLarge() ? 'large' : 'normal'}`);
       });
-      document.querySelector('.js-stack').addEventListener('click', function() {
+
+      const stackButton = document.querySelector('.js-stack');
+      stackButton.addEventListener('click', () => {
         headerStackingContext = !headerStackingContext;
-        console.log('headerStackingContext: ' + headerStackingContext);
+        stackButton.textContent = `Shared stacking: ${
+          headerStackingContext ? 'on' : 'off'
+        }`;
+        // sharedStacking は生成時に決まる設定なので、
+        // 生きているインスタンスは作り直して即座に反映させる
+        if (instances.header) {
+          instances.header.destroy();
+          instances.header = createInstance('header');
+        }
+        console.log(`headerStackingContext: ${headerStackingContext}`);
       });
     </script>
   </body>

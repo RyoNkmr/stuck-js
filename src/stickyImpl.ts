@@ -1,14 +1,14 @@
-import { StickyManager, getStickyManagerInstance } from './stickyManager'
-import {
+import Placeholder from './placeholder'
+import type {
+  PartialRequired,
+  SelectorOrElement,
   Sticky,
   StickyOptions,
-  SelectorOrElement,
-  PartialRequired,
 } from './sticky'
-import Placeholder from './placeholder'
+import { getStickyManagerInstance, type StickyManager } from './stickyManager'
 import { noop } from './utility'
 
-type MaybeHTMLElement = HTMLElement | Element | null | void
+type MaybeHTMLElement = HTMLElement | Element | null | undefined
 
 const normalizeElement = (
   value?: SelectorOrElement,
@@ -44,16 +44,17 @@ export default class StickyImpl implements Sticky {
   public placeholder: Placeholder
   public marginTop: number = 0
   public isStickToBottom: boolean = false
-  public rect: ClientRect
+  public rect: DOMRect
   public floor?: number
 
   private $$wrapper!: HTMLElement
   private $$additionalTop?: number
+  private $$destroyed: boolean = false
 
   private readonly $$manager: StickyManager
 
   private get isSticky(): boolean {
-    return this.element !== null && this.element.style.position === 'fixed'
+    return this.element.style.position === 'fixed'
   }
 
   private set isSticky(value: boolean) {
@@ -72,9 +73,7 @@ export default class StickyImpl implements Sticky {
   }
 
   private get top(): number {
-    return this.$$additionalTop || this.$$additionalTop === 0
-      ? this.$$additionalTop
-      : this.marginTop
+    return this.$$additionalTop ?? this.marginTop
   }
 
   private set top(value: number) {
@@ -106,8 +105,8 @@ export default class StickyImpl implements Sticky {
     this.setWrapperFromSelectorOrElement(this.options.wrapper)
     this.placeholder = new Placeholder(
       this.element,
-      this.options.observe || true,
-      onUpdate || this.$$manager.bulkUpdate
+      this.options.observe ?? true,
+      onUpdate
     )
     this.element.dataset.stuck = ''
 
@@ -126,26 +125,24 @@ export default class StickyImpl implements Sticky {
         '[Stuck.js] document.body is not HTMLElement in this environment'
       )
     }
-    const parent = (
-      (this.placeholder && this.placeholder.element) ||
-      this.element
-    ).parentElement
+    const parent = (this.placeholder?.element || this.element).parentElement
     this.$$wrapper = normalizeElement(selectorOrElement, parent, document.body)
     this.floor = computeAbsoluteFloor(this.$$wrapper)
     this.options.wrapper = this.$$wrapper
   }
 
   public destroy(): void {
+    if (this.$$destroyed) {
+      return
+    }
+    this.$$destroyed = true
     this.isSticky = false
     this.placeholder.destroy()
     this.$$manager.unregister(this)
-    delete this.placeholder
-    delete this.element
-    delete this.options
   }
 
   private computePositionTopFromRect(
-    rect: ClientRect = this.element.getBoundingClientRect()
+    rect: DOMRect = this.element.getBoundingClientRect()
   ): void {
     this.rect = rect
     this.floor = computeAbsoluteFloor(this.wrapper)
@@ -159,6 +156,12 @@ export default class StickyImpl implements Sticky {
     }
 
     if (!this.isStickToBottom) {
+      // marginTop はスタックへの出入りで変わるので、その都度追従させる。
+      // ここで返してしまうと、上に積まれていた sticky が消えても
+      // 再計算された marginTop が style.top に反映されない
+      if (this.$$additionalTop !== this.marginTop) {
+        this.top = this.marginTop
+      }
       return
     }
 
