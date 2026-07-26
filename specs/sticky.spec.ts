@@ -151,6 +151,50 @@ describe('Sticky', () => {
     })
   })
 
+  describe('following size changes', () => {
+    const initialHeight = 200
+    const expandedHeight = 500
+
+    beforeEach(async () => {
+      await setContent(
+        `
+          <div id="container">
+            <div id="js-target" class="box">target</div>
+          </div>
+        `,
+        `
+          #container {
+            height: ${containerHeight}px;
+          }
+          .box {
+            width: 300px;
+            height: ${initialHeight}px;
+            background-color: #33a;
+            transition: height .15s linear;
+          }
+          .box.box--tall {
+            height: ${expandedHeight}px;
+          }
+        `
+      )
+    })
+
+    it('follows the element through a CSS transition', async () => {
+      new Sticky(elementOf('#js-target'))
+      await scrollTo(0, viewport.height)
+      await expect
+        .poll(() => parentRectsOf('#js-target')[0].height)
+        .toBe(initialHeight)
+
+      // transition による高さ変化は属性を変えないので、
+      // class の付与を一度観測するだけでは最終サイズを取り逃がす
+      elementOf('#js-target').classList.add('box--tall')
+      await expect
+        .poll(() => parentRectsOf('#js-target')[0].height, { timeout: 2000 })
+        .toBe(expandedHeight)
+    })
+  })
+
   describe('position sticking inside the wrapper', () => {
     beforeEach(async () => {
       await setContent(

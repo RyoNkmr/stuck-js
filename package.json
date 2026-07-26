@@ -17,9 +17,6 @@
     "lib"
   ],
   "sideEffects": false,
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
     "dev": "vite build --mode docs --watch",
     "build": "vite build && tsc -p tsconfig.build.json",
@@ -29,6 +26,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepare": "husky || true",
     "semantic-release": "semantic-release"
   },
@@ -49,10 +47,9 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
-    "@semantic-release/changelog": "^7.0.0",
-    "@semantic-release/git": "^11.0.1",
     "@vitest/browser": "^4.1.10",
     "@vitest/browser-playwright": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.10",
     "husky": "^9.1.7",
     "playwright": "^1.62.0",
     "semantic-release": "^25.0.8",
@@ -64,10 +61,8 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
       "@semantic-release/github",
-      "@semantic-release/npm",
-      "@semantic-release/git"
+      "@semantic-release/npm"
     ]
   }
 }

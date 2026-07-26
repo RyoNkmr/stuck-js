@@ -1,3 +1,7 @@
+> Release notes from v2.1.5 onwards live in the
+> [GitHub releases](https://github.com/RyoNkmr/stuck-js/releases). This file
+> covers the versions published before that.
+
 ## [2.1.4](https://github.com/RyoNkmr/stuck-js/compare/v2.1.3...v2.1.4) (2019-06-07)
 
 

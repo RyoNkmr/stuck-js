@@ -26,6 +26,19 @@ export default defineConfig(({ mode }) => {
     },
     test: {
       include: ['specs/**/*.spec.ts'],
+      coverage: {
+        provider: 'v8',
+        include: ['src/**/*.ts'],
+        reporter: ['text'],
+        // 実測値(93.8/84.5/98.7/93.7)から少し余裕を取った下限。
+        // 大きな退行は捕まえつつ、実ブラウザ実行のぶれでは落ちない水準
+        thresholds: {
+          statements: 90,
+          branches: 80,
+          functions: 95,
+          lines: 90,
+        },
+      },
       browser: {
         enabled: true,
         headless: true,
