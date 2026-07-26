@@ -1,5 +1,3 @@
-import type Placeholder from './placeholder'
-
 export type Selector = string
 export type SelectorOrElement = Selector | HTMLElement
 export type PartialRequired<T, K extends keyof T> = Required<Pick<T, K>> &
@@ -14,11 +12,9 @@ export interface StickyOptions {
 export interface Sticky {
   element: HTMLElement
   options: PartialRequired<StickyOptions, 'marginTop'>
-  placeholder: Placeholder
-  marginTop: number
-  isStickToBottom: boolean
-  rect: DOMRect
-  floor?: number
-  destroy(): void
+  /** 上に積まれた sticky の高さを含めた、実際に固定される位置 */
+  offsetTop: number
+  /** スタック上の位置を再計算させる。通常は自動で呼ばれる */
   update(): void
+  destroy(): void
 }

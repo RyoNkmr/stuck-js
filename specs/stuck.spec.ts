@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { Stuck } from '../src'
+import { stacked } from '../src/stack'
 import type { StickySetting } from '../src/stuck'
-import { getStuckManagerInstance } from '../src/stuckManager'
 import { cleanup, elementOf, scrollTo, setContent, topsOf } from './helpers'
 
 const viewport = { width: 800, height: 600 }
@@ -29,7 +29,8 @@ const css = `
     height: 250px;
     background-color: #33a;
   }
-  .box:nth-child(n+2) {
+  /* sentinel が兄弟に加わるため nth-child ではなく直接指定する */
+  #js-box01, #js-box03 {
     margin-top: 30px;
   }
   .box.box--large {
@@ -163,6 +164,21 @@ describe('Stuck', () => {
       it('throws when no selector, element nor elements in setting was given', () => {
         expect(() => new Stuck({} as unknown as StickySetting)).toThrow()
       })
+
+      it('creates nothing when the selector matches no element', () => {
+        const stuck = new Stuck({ selector: '.nothing-matches-this' })
+        expect(stuck.stickies).toEqual([])
+        expect(
+          stuck.create({ selector: '.nothing-matches-this' }, true)
+        ).toEqual([])
+      })
+
+      it('skips elements another instance already registered', () => {
+        const first = new Stuck({ selector: '#js-box01' })
+        const second = new Stuck({ selector: '#js-box01' })
+        expect(first.stickies.length).toBe(1)
+        expect(second.stickies.length).toBe(0)
+      })
     })
 
     describe('after constructed(lazy registration)', () => {
@@ -177,9 +193,7 @@ describe('Stuck', () => {
   describe('sort and updates by position', () => {
     const indexOfStackingSticky = (selector: string): number => {
       const target = elementOf(selector)
-      return getStuckManagerInstance(window).stackingStickies.findIndex(
-        ({ element }) => element === target
-      )
+      return stacked().findIndex(({ element }) => element === target)
     }
 
     it('when created', () => {

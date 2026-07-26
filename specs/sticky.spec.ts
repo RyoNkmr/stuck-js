@@ -4,10 +4,10 @@ import { Sticky } from '../src'
 import {
   cleanup,
   elementOf,
-  parentRectsOf,
   rectsOf,
   scrollTo,
   setContent,
+  topsOf,
 } from './helpers'
 
 const viewport = { width: 800, height: 600 }
@@ -35,9 +35,6 @@ const boxesCss = `
     width: 300px;
     height: 300px;
     background-color: #33a;
-  }
-  .fullwidth {
-    width: 100%;
   }
   .box--large {
     height: 600px;
@@ -69,6 +66,13 @@ describe('Sticky', () => {
       expect(rectsOf(target)[0].left).toBe(-100)
     })
 
+    it('leaves the page height untouched while stuck', async () => {
+      const before = document.body.scrollHeight
+      await scrollTo(0, viewport.height)
+      await expect.poll(() => rectsOf(target)[0].top).toBe(0)
+      expect(document.body.scrollHeight).toBe(before)
+    })
+
     describe('DOM mutations', () => {
       it('adds stuck data attribute on created', () => {
         expect(elementOf(target).dataset.stuck).toBeDefined()
@@ -79,75 +83,86 @@ describe('Sticky', () => {
         await expect.poll(() => elementOf(target).dataset.stuck).toBe('true')
       })
 
-      it('turns stuck-attr to be empty string while no-sticky state', () => {
-        expect(elementOf(target).dataset.stuck).toBe('')
+      it('turns stuck-attr to be empty string while no-sticky state', async () => {
+        await expect.poll(() => elementOf(target).dataset.stuck).toBe('')
       })
     })
   })
 
   describe('options', () => {
-    // #js-box01 は .box--large なので高さ 600px
-    const targetHeight = 600
-
     beforeEach(async () => {
       await setContent(boxesHtml, boxesCss)
     })
 
-    it('observes mutations by default', () => {
-      const sticky = new Sticky(elementOf(target))
-      expect(sticky.placeholder.observer).toBeDefined()
-    })
+    // 上の要素が伸びたら、その下に積まれた要素も下がるはず
+    const growFirstBox = (): void => {
+      elementOf('#js-box00').style.height = '500px'
+    }
 
-    it('does not observe mutations when observe is false', () => {
-      const sticky = new Sticky(elementOf(target), { observe: false })
-      expect(sticky.placeholder.observer).toBeUndefined()
-    })
-
-    it('keeps the space of the original element while being sticky', async () => {
+    it('follows a sibling that grows above it', async () => {
+      new Sticky(elementOf('#js-box00'))
       new Sticky(elementOf(target))
       await scrollTo(0, viewport.height)
-      await expect
-        .poll(() => parentRectsOf(target)[0].height)
-        .toBe(targetHeight)
+      await expect.poll(() => topsOf('#js-box00', target)).toEqual([0, 300])
+
+      growFirstBox()
+      await expect.poll(() => topsOf('#js-box00', target)).toEqual([0, 500])
+    })
+
+    it('does not follow the sibling when observe is false', async () => {
+      new Sticky(elementOf('#js-box00'), { observe: false })
+      new Sticky(elementOf(target), { observe: false })
+      await scrollTo(0, viewport.height)
+      await expect.poll(() => topsOf('#js-box00', target)).toEqual([0, 300])
+
+      growFirstBox()
+      await expect.poll(() => topsOf('#js-box00', target)).toEqual([0, 300])
     })
   })
 
-  describe('placeholder', () => {
+  describe('lifecycle', () => {
     beforeEach(async () => {
-      await setContent(
-        `
-          <header>header</header>
-          <main></main>
-        `,
-        `
-          main {
-            display: block;
-            height: 3000px;
-          }
-          header {
-            width: 100%;
-            height: 80px;
-            background-color: #a3a;
-          }
-        `
-      )
+      await setContent(boxesHtml, boxesCss)
     })
 
-    // sticky 本体と placeholder は別フレームで更新されうるので、まとめて待つ
-    const widthsOfHeader = (): number[] => [
-      rectsOf('header')[0].width,
-      parentRectsOf('header')[0].width,
-    ]
+    it('throws when no element is given', () => {
+      expect(() => new Sticky(undefined as unknown as HTMLElement)).toThrow()
+    })
 
-    it('update sticky and placeholder size on resize', async () => {
-      new Sticky(elementOf('header'))
-      await scrollTo(0, 1000)
-      await expect
-        .poll(widthsOfHeader)
-        .toEqual([viewport.width, viewport.width])
+    it('exposes the offset it sticks at', () => {
+      const first = new Sticky(elementOf('#js-box00'))
+      const second = new Sticky(elementOf(target))
+      expect(first.offsetTop).toBe(0)
+      expect(second.offsetTop).toBe(300)
+    })
 
-      await page.viewport(400, viewport.height)
-      await expect.poll(widthsOfHeader).toEqual([400, 400])
+    it('restores the element on destroy', () => {
+      const element = elementOf(target)
+      const sticky = new Sticky(element)
+      expect(element.style.position).toBe('sticky')
+
+      sticky.destroy()
+      expect(element.style.position).toBe('')
+      expect(element.dataset.stuck).toBeUndefined()
+    })
+
+    it('tolerates destroy and update being called after destroy', () => {
+      const sticky = new Sticky(elementOf(target))
+      sticky.destroy()
+      expect(() => {
+        sticky.destroy()
+        sticky.update()
+      }).not.toThrow()
+    })
+
+    it('re-runs the stack calculation on update()', () => {
+      const first = new Sticky(elementOf('#js-box00'))
+      const second = new Sticky(elementOf(target))
+      elementOf('#js-box00').style.height = '450px'
+
+      second.update()
+      expect(second.offsetTop).toBe(450)
+      expect(first.offsetTop).toBe(0)
     })
   })
 
@@ -160,6 +175,7 @@ describe('Sticky', () => {
         `
           <div id="container">
             <div id="js-target" class="box">target</div>
+            <div id="js-below" class="box">below</div>
           </div>
         `,
         `
@@ -181,17 +197,49 @@ describe('Sticky', () => {
 
     it('follows the element through a CSS transition', async () => {
       new Sticky(elementOf('#js-target'))
+      new Sticky(elementOf('#js-below'))
       await scrollTo(0, viewport.height)
       await expect
-        .poll(() => parentRectsOf('#js-target')[0].height)
-        .toBe(initialHeight)
+        .poll(() => topsOf('#js-target', '#js-below'))
+        .toEqual([0, initialHeight])
 
       // transition による高さ変化は属性を変えないので、
-      // class の付与を一度観測するだけでは最終サイズを取り逃がす
+      // ResizeObserver でなければ最終サイズを取り逃がす
       elementOf('#js-target').classList.add('box--tall')
       await expect
-        .poll(() => parentRectsOf('#js-target')[0].height, { timeout: 2000 })
-        .toBe(expandedHeight)
+        .poll(() => topsOf('#js-target', '#js-below'), { timeout: 2000 })
+        .toEqual([0, expandedHeight])
+    })
+  })
+
+  describe('resizing the viewport', () => {
+    beforeEach(async () => {
+      await setContent(
+        `
+          <header>header</header>
+          <main></main>
+        `,
+        `
+          main {
+            display: block;
+            height: 3000px;
+          }
+          header {
+            width: 100%;
+            height: 80px;
+            background-color: #a3a;
+          }
+        `
+      )
+    })
+
+    it('keeps the element width in sync with its container', async () => {
+      new Sticky(elementOf('header'))
+      await scrollTo(0, 1000)
+      await expect.poll(() => rectsOf('header')[0].width).toBe(viewport.width)
+
+      await page.viewport(400, viewport.height)
+      await expect.poll(() => rectsOf('header')[0].width).toBe(400)
     })
   })
 

@@ -1,11 +1,10 @@
-import Placeholder from './placeholder'
+import { join, recalculate, register, unregister } from './stack'
 import type {
   PartialRequired,
   SelectorOrElement,
   Sticky,
   StickyOptions,
 } from './sticky'
-import { getStickyManagerInstance, type StickyManager } from './stickyManager'
 import { noop } from './utility'
 
 type MaybeHTMLElement = HTMLElement | Element | null | undefined
@@ -29,61 +28,17 @@ const normalizeElement = (
   throw new TypeError('[Stuck-js] Could not find HTMLElement')
 }
 
-const computeAbsoluteFloor = (target: HTMLElement): number => {
-  const absoluteBottom =
-    target.getBoundingClientRect().bottom + window.pageYOffset
-  const { paddingBottom } = window.getComputedStyle(target)
-  const paddingBottomPixels =
-    paddingBottom !== null ? parseInt(paddingBottom, 10) : 0
-  return absoluteBottom - paddingBottomPixels
-}
-
 export default class StickyImpl implements Sticky {
   public element: HTMLElement
   public options: PartialRequired<StickyOptions, 'marginTop'>
-  public placeholder: Placeholder
-  public marginTop: number = 0
-  public isStickToBottom: boolean = false
-  public rect: DOMRect
-  public floor?: number
 
-  private $$wrapper!: HTMLElement
-  private $$additionalTop?: number
+  private $$offsetTop: number = -1
+  private readonly $$onUpdate: () => void
+  private readonly $$restoreStyles: () => void
+  private readonly $$sentinel: HTMLElement
+  private $$resizeObserver?: ResizeObserver
+  private $$stuckObserver?: IntersectionObserver
   private $$destroyed: boolean = false
-
-  private readonly $$manager: StickyManager
-
-  private get isSticky(): boolean {
-    return this.element.style.position === 'fixed'
-  }
-
-  private set isSticky(value: boolean) {
-    if (this.placeholder) {
-      this.placeholder.shouldPlacehold = value
-    }
-    this.element.dataset.stuck = value ? value.toString() : ''
-    this.element.style.position = value ? 'fixed' : ''
-    this.element.style.top = value ? `${this.top}px` : ''
-    this.element.style.left = value
-      ? `${this.placeholder.updateRect().left}px`
-      : ''
-    if (value) {
-      this.computePositionTopFromRect()
-    }
-  }
-
-  private get top(): number {
-    return this.$$additionalTop ?? this.marginTop
-  }
-
-  private set top(value: number) {
-    this.$$additionalTop = value
-    this.element.style.top = value ? `${value}px` : `${this.marginTop}px`
-  }
-
-  private get wrapper(): HTMLElement {
-    return this.$$wrapper
-  }
 
   public constructor(
     element: HTMLElement,
@@ -94,41 +49,88 @@ export default class StickyImpl implements Sticky {
     if (!element) {
       throw new Error('[Stuck-js] Invalid element given')
     }
-    this.$$manager = getStickyManagerInstance(window).register(this)
+
     this.element = element
-    this.rect = this.element.getBoundingClientRect()
-    this.options = {
-      marginTop: 0,
-      ...options,
-    }
-    this.marginTop = this.options.marginTop || 0
-    this.setWrapperFromSelectorOrElement(this.options.wrapper)
-    this.placeholder = new Placeholder(
-      this.element,
-      this.options.observe ?? true,
-      onUpdate
+    this.options = { marginTop: 0, ...options }
+    this.$$onUpdate = typeof onUpdate === 'function' ? onUpdate : noop
+    this.options.wrapper = normalizeElement(
+      this.options.wrapper,
+      element.parentElement,
+      document.body
     )
-    this.element.dataset.stuck = ''
+
+    const { position, top } = element.style
+    this.$$restoreStyles = (): void => {
+      element.style.position = position
+      element.style.top = top
+    }
+    element.style.position = 'sticky'
+    element.dataset.stuck = ''
+
+    // 元の位置に残る目印。要素自身を観測しても、固定されて動かないのか
+    // 元からその位置にあるのかを区別できないため、動かない基準が要る
+    this.$$sentinel = document.createElement('div')
+    this.$$sentinel.style.cssText =
+      'height:0;margin:0;padding:0;border:0;visibility:hidden;'
+    element.insertAdjacentElement('beforebegin', this.$$sentinel)
+
+    this.offsetTop = this.options.marginTop
+
+    if (this.options.observe ?? true) {
+      // 高さが変われば下に積まれた sticky の位置も変わる
+      this.$$resizeObserver = new ResizeObserver((): void => {
+        recalculate()
+        this.$$onUpdate()
+      })
+      this.$$resizeObserver.observe(element)
+    }
+
+    register(this)
 
     if (activate) {
-      this.$$manager.activate()
+      join(this)
     }
-
-    this.placeholder.shouldPlacehold = this.isSticky
   }
 
-  private setWrapperFromSelectorOrElement(
-    selectorOrElement?: SelectorOrElement
-  ): void {
-    if (!(document.body instanceof HTMLElement)) {
-      throw new TypeError(
-        '[Stuck.js] document.body is not HTMLElement in this environment'
-      )
+  public get offsetTop(): number {
+    return this.$$offsetTop
+  }
+
+  public set offsetTop(value: number) {
+    if (this.$$destroyed || this.$$offsetTop === value) {
+      return
     }
-    const parent = (this.placeholder?.element || this.element).parentElement
-    this.$$wrapper = normalizeElement(selectorOrElement, parent, document.body)
-    this.floor = computeAbsoluteFloor(this.$$wrapper)
-    this.options.wrapper = this.$$wrapper
+    this.$$offsetTop = value
+    this.element.style.top = `${value}px`
+    this.watchStuckState()
+  }
+
+  /**
+   * 固定線が動くたびに監視域を張り直す。sentinel がその線より上へ
+   * 抜けていれば、要素は線に貼り付いている
+   */
+  private watchStuckState(): void {
+    this.$$stuckObserver?.disconnect()
+    this.$$stuckObserver = new IntersectionObserver(
+      ([entry]): void => {
+        this.element.dataset.stuck = entry.isIntersecting ? '' : 'true'
+      },
+      {
+        // 上は固定線まで縮め、下はページ全体を覆うほど広げる。
+        // 下を広げないと、まだ画面下にある sentinel まで「交差なし」に
+        // なってしまい、スクロール前から固定扱いされる
+        rootMargin: `-${this.$$offsetTop}px 0px 100000px 0px`,
+        threshold: 0,
+      }
+    )
+    this.$$stuckObserver.observe(this.$$sentinel)
+  }
+
+  public update(): void {
+    if (this.$$destroyed) {
+      return
+    }
+    recalculate()
   }
 
   public destroy(): void {
@@ -136,66 +138,11 @@ export default class StickyImpl implements Sticky {
       return
     }
     this.$$destroyed = true
-    this.isSticky = false
-    this.placeholder.destroy()
-    this.$$manager.unregister(this)
-  }
-
-  private computePositionTopFromRect(
-    rect: DOMRect = this.element.getBoundingClientRect()
-  ): void {
-    this.rect = rect
-    this.floor = computeAbsoluteFloor(this.wrapper)
-
-    const relativeFloor = (this.floor || 0) - window.pageYOffset
-
-    if (this.rect.bottom >= relativeFloor && !this.isStickToBottom) {
-      this.top = relativeFloor - this.rect.height
-      this.isStickToBottom = true
-      return
-    }
-
-    if (!this.isStickToBottom) {
-      // marginTop はスタックへの出入りで変わるので、その都度追従させる。
-      // ここで返してしまうと、上に積まれていた sticky が消えても
-      // 再計算された marginTop が style.top に反映されない
-      if (this.$$additionalTop !== this.marginTop) {
-        this.top = this.marginTop
-      }
-      return
-    }
-
-    if (this.rect.top >= this.marginTop) {
-      this.top = this.marginTop
-      this.isStickToBottom = false
-      return
-    }
-
-    if (this.rect.top < this.marginTop) {
-      this.top = relativeFloor - this.rect.height
-    }
-  }
-
-  public update(): void {
-    const placeholderRect = this.placeholder.element.getBoundingClientRect()
-
-    if (!this.isSticky && this.marginTop > placeholderRect.top) {
-      this.isSticky = true
-      return
-    }
-
-    if (this.isSticky) {
-      if (placeholderRect.top >= this.marginTop) {
-        this.isSticky = false
-        return
-      }
-
-      this.rect = this.element.getBoundingClientRect()
-      if (this.rect.left !== placeholderRect.left) {
-        this.element.style.left = `${placeholderRect.left}px`
-      }
-
-      this.computePositionTopFromRect(this.rect)
-    }
+    this.$$resizeObserver?.disconnect()
+    this.$$stuckObserver?.disconnect()
+    this.$$sentinel.remove()
+    this.$$restoreStyles()
+    this.element.removeAttribute('data-stuck')
+    unregister(this)
   }
 }
