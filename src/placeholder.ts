@@ -4,7 +4,7 @@ export default class Placeholder {
   public original: HTMLElement
   public element: HTMLElement
   public cachedRect: DOMRect
-  public observer?: MutationObserver
+  public observer?: ResizeObserver
   public onUpdate: () => void
   public initialComputedStyles: CSSStyleDeclaration
   public initiallyHidden: boolean
@@ -131,36 +131,28 @@ export default class Placeholder {
     this.element.style.height = ''
   }
 
+  /**
+   * サイズそのものを監視する。属性の変化を見る MutationObserver では
+   * CSS transition や animation による寸法の変化を取り逃がしてしまう
+   * （class が付いた時点でしか測れず、遷移後の値にならない）。
+   */
   private static createObserver(
     targetNode: HTMLElement,
     callback: () => void
-  ): MutationObserver {
+  ): ResizeObserver {
     if (!targetNode) {
       throw new TypeError(
-        `[Stuck.js] Could not create mutation observer on targetNode ${String(
+        `[Stuck.js] Could not observe targetNode ${String(
           targetNode
         )}. This should be HTMLElement`
       )
     }
 
-    const detectSizeMutation = ({ type }: MutationRecord): boolean =>
-      type === 'childList' || type === 'attributes'
-
-    const observer = new MutationObserver(
-      (mutations: readonly MutationRecord[]): void => {
-        const isMutated = mutations.some(detectSizeMutation)
-        if (isMutated) {
-          callback()
-        }
-      }
-    )
-
-    observer.observe(targetNode, {
-      attributes: true,
-      attributeFilter: ['style', 'class'],
-      childList: true,
-      subtree: true,
+    const observer = new ResizeObserver((): void => {
+      callback()
     })
+
+    observer.observe(targetNode)
     return observer
   }
 
