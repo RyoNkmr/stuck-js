@@ -18,8 +18,13 @@ Demo: https://ryonkmr.github.io/stuck-js/
 > $ npm i -S stuck-js@^2
 > ```
 >
-> 2.x receives fixes but no new features. See [Migrating from v2](#migrating-from-v2)
-> for what changed.
+> 2.x is frozen at v2.1.5 on the [`v2` branch](https://github.com/RyoNkmr/stuck-js/tree/v2)
+> and is no longer developed. That is a safe place to sit: the package ships no
+> runtime dependencies, so there is no supply chain underneath it to rot, and
+> nothing to patch when someone else's package has a CVE. It will keep working
+> for as long as the browsers you target do.
+>
+> See [Migrating from v2](#migrating-from-v2) for what changed in v3.
 
 ## Quickstart
 
