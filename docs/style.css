@@ -342,6 +342,15 @@ footer .contents {
   transform: translateY(1px);
 }
 
+.controller button:disabled,
+.controller button:disabled:hover {
+  background-color: rgba(255,255,255, .4);
+  border-color: transparent;
+  color: rgba(0,51,136, .4);
+  cursor: default;
+  transform: none;
+}
+
 .controller button:nth-child(n+2) {
   margin-top: 8px;
 }

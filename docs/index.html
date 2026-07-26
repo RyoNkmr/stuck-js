@@ -222,17 +222,33 @@ const instances = new Stuck([
         ads: createInstance('ads'),
       };
 
-      document.querySelectorAll('.js-control').forEach(el => {
+      const controls = document.querySelectorAll('.js-control');
+
+      // 生きているインスタンスに対応するボタンだけを押せるようにして、
+      // スクロール前でも今どちらの状態なのかが分かるようにする
+      const updateControls = () => {
+        controls.forEach(el => {
+          const { target, method } = el.dataset;
+          const isActive = Boolean(instances[target]);
+          el.disabled = method === 'create' ? isActive : !isActive;
+        });
+      };
+
+      controls.forEach(el => {
         const { target, method } = el.dataset;
         el.addEventListener('click', () => {
           if (method === 'create') {
             instances[target] = createInstance(target);
           } else {
             instances[target].destroy();
+            instances[target] = null;
           }
+          updateControls();
           console.log(`${method} ${target} instance`);
         });
       });
+
+      updateControls();
 
       const box = document.getElementById('js-control-inner');
       const largeClassName = 'controller__inner--larger';
