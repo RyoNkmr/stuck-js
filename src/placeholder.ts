@@ -82,10 +82,6 @@ export default class Placeholder {
       delete this.observer
     }
     Placeholder.unwrap(this.original)
-    delete this.element
-    delete this.original
-    delete this.cachedRect
-    delete this.onUpdate
   }
 
   private execWhileStucking(execute: () => void): void {

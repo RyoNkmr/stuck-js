@@ -139,9 +139,6 @@ export default class StickyImpl implements Sticky {
     this.isSticky = false
     this.placeholder.destroy()
     this.$$manager.unregister(this)
-    delete this.placeholder
-    delete this.element
-    delete this.options
   }
 
   private computePositionTopFromRect(
