@@ -17,9 +17,6 @@
     "lib"
   ],
   "sideEffects": false,
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
     "dev": "vite build --mode docs --watch",
     "build": "vite build && tsc -p tsconfig.build.json",
