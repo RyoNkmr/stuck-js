@@ -5,8 +5,47 @@ on:
     branches: [master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  ci:
+  # lint / typecheck / build は同じ準備で済むので matrix でまとめる。
+  # Checks 上は check (lint) のように個別の結果として並ぶ
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        task: [lint, typecheck, build]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run ${{ matrix.task }}
+
+  # ブラウザの用意が要るので独立させる
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:coverage
+
+  release:
+    needs: [check, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,6 +56,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          # semantic-release が既存のタグと履歴を読むため全件取得する
+          fetch-depth: 0
           # リリースは GitHub API と npm 経由で、リポジトリへの push は行わない
           # （master はブランチ保護下にあり直接 push できない）
           persist-credentials: false
@@ -25,14 +66,8 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run lint
-      - run: npm run typecheck
       - run: npm run build
-      - run: npm run test:coverage
-      - name: Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: npx semantic-release
+      - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Trusted Publishing が使えない場合のフォールバック。
