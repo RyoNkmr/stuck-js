@@ -8,6 +8,19 @@ A sticky library that stacks multiple sticky elements on top of each other and k
 
 Demo: https://ryonkmr.github.io/stuck-js/
 
+> [!IMPORTANT]
+> **v3 builds on the browser's own `position: sticky`, so it does not run on IE11.**
+> Every other browser released since 2017 supports it. If you still need IE11,
+> stay on the 2.x line — it computes positions in JavaScript and has no such
+> requirement:
+>
+> ```bash
+> $ npm i -S stuck-js@^2
+> ```
+>
+> 2.x receives fixes but no new features. See [Migrating from v2](#migrating-from-v2)
+> for what changed.
+
 ## Quickstart
 
 ### Setup
@@ -70,10 +83,13 @@ const instances = new Stuck([
 
 ## API
 
-The package exports `Stuck` (also the default export), `Sticky` and `Placeholder`.
-`Stuck` is what you normally use: it resolves selectors, creates one `Sticky` per
-element and keeps them stacked. `Placeholder` is an implementation detail and you
-should not need to construct it yourself.
+The package exports `Stuck` (also the default export) and `Sticky`. `Stuck` is what
+you normally use: it resolves selectors, creates one `Sticky` per element and keeps
+them stacked.
+
+Positioning itself is left to the browser. Each element gets `position: sticky`,
+and the library only decides what `top` it should stick at — the sum of the
+heights of the stickies above it. There is no scroll handler.
 
 ### Options
 
@@ -83,8 +99,8 @@ defaults:
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `marginTop` | `number` | `0` | Gap left above the element once it sticks, measured from the bottom of the sticky above it, or from the top of the window when nothing is stacked above. |
-| `wrapper` | `string \| HTMLElement` | the element's `parentElement`, else `document.body` | Node that bounds the stacking. The sticky stops once it reaches the wrapper's bottom edge. |
-| `observe` | `boolean` | `true` | Watch the element with a `ResizeObserver` so the reserved space follows its size. Set to `false` if the element never resizes. |
+| `wrapper` | `string \| HTMLElement` | the element's `parentElement`, else `document.body` | Node that bounds the stacking. The sticky stops once it reaches the wrapper's bottom edge. Because this is `position: sticky`'s own containing block, the wrapper has to be an ancestor of the element. |
+| `observe` | `boolean` | `true` | Watch the element with a `ResizeObserver` so the stack re-stacks when its height changes. Set to `false` if the element never resizes. |
 
 A setting also needs a target, given as **either** a selector **or** elements:
 
@@ -130,28 +146,56 @@ have the element and do not need stacking across instances.
 | --- | --- | --- | --- |
 | `element` | `HTMLElement` | — | Required. |
 | `options` | `StickyOptions` | `{ observe: true }` | Same options as above. |
-| `activate` | `boolean` | `true` | Start listening to scroll and resize immediately. |
-| `onUpdate` | `() => void` | no-op | Called after the reserved space is recalculated. |
+| `activate` | `boolean` | `true` | Join the shared stack immediately. |
+| `onUpdate` | `() => void` | no-op | Called after a resize triggers a re-stack. |
 
 | Member | Type | Description |
 | --- | --- | --- |
 | `element` | `HTMLElement` | The element being stuck. |
 | `options` | `StickyOptions` | Resolved options, with `marginTop` always present. |
-| `placeholder` | `Placeholder` | Holds the space the element leaves behind. |
-| `marginTop` | `number` | Current offset, recalculated as the stack changes. |
-| `isStickToBottom` | `boolean` | Whether it has reached the wrapper's bottom edge. |
-| `rect` | `DOMRect` | Last measured box. |
-| `floor` | `number \| undefined` | Absolute Y of the wrapper's bottom edge. |
-| `update()` | `void` | Re-evaluates position. Called for you on scroll and resize. |
+| `offsetTop` | `number` | The `top` it sticks at, including the stickies stacked above it. |
+| `update()` | `void` | Re-runs the stack calculation. Called for you when a height changes. |
 | `destroy()` | `void` | Restores the DOM and stops observing. Safe to call twice. |
 
 ### DOM and styling
 
-Each sticky is wrapped in a `div` that reserves its space, and the element gets a
-`data-stuck` attribute — `"true"` while stuck, `""` otherwise — so you can style
-both states:
+The element gets a `data-stuck` attribute — `"true"` while stuck, `""` otherwise —
+so you can style both states:
 
 ```css
 .my-sticky[data-stuck='true'] { box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
 ```
+
+To know whether an element is currently stuck, a zero-height `div` is inserted
+immediately before it and watched with an `IntersectionObserver` — the element
+itself cannot tell you, since a sticky element pinned at `top: 0` and one that
+simply starts there look identical.
+
+That sentinel counts as a sibling, so **structural selectors shift by one**:
+
+```css
+/* does not do what you want: the sentinel is now the first child */
+.item:nth-child(n + 2) { margin-top: 30px; }
+
+/* address the elements directly instead */
+.item { margin-top: 30px; }
+.item:first-of-type { margin-top: 0; }
+```
+
+`:first-of-type` is safe as long as your sticky elements are not `div`s. When they
+are, target them by class or id.
+
+### Migrating from v2
+
+| v2 | v3 |
+| --- | --- |
+| Wrapped every sticky in a placeholder `div` | Inserts a zero-height sentinel `div` before it |
+| `Placeholder` was exported | Removed — the browser reserves the space now |
+| `sticky.marginTop` was the computed offset | `sticky.offsetTop` |
+| `sticky.rect`, `sticky.floor`, `sticky.isStickToBottom` | Removed — the browser owns positioning |
+| `wrapper` could be any element | Must be an ancestor of the sticky element |
+| Ran a scroll handler on every frame | No scroll handler |
+
+`new Stuck(...)`, `stuck.create()`, `stuck.stickies`, `stuck.destroy()`, the three
+options and the `data-stuck` attribute all behave as before.
 

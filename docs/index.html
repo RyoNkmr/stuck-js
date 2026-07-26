@@ -126,14 +126,14 @@ const instances = new Stuck([
               <span class="option__type">HTMLElement</span>
               <span class="option__default">parentElement|document.body</span>
             </h3>
-            <p>The node that bounds the stacking behaviour. Stickies stack within their wrapper and stop once they reach its bottom edge, so they never escape the section they belong to.</p>
+            <p>The node that bounds the stacking behaviour. Stickies stack within their wrapper and stop once they reach its bottom edge, so they never escape the section they belong to. It has to be an ancestor of the element, since this is <span class="code-inline">position: sticky</span>'s own containing block.</p>
 
             <h3 id="Options-observe" class="option">
               observe
               <span class="option__type">boolean</span>
               <span class="option__default">true</span>
             </h3>
-            <p>By default each sticky watches its own subtree with a <span class="code-inline">MutationObserver</span>, so the space it reserves keeps matching its size as the content changes. Set <span class="code-inline">observe: false</span> to skip that when the element never resizes.</p>
+            <p>By default each sticky watches itself with a <span class="code-inline">ResizeObserver</span>, so the ones stacked below it move as its height changes. Set <span class="code-inline">observe: false</span> to skip that when the element never resizes.</p>
 
             <p>The full API — <span class="code-inline">Stuck</span>, <span class="code-inline">Sticky</span>, their methods and the DOM they produce — is documented in the <a href="https://github.com/RyoNkmr/stuck-js#api">README on GitHub</a>.</p>
           </section>
