@@ -1,7 +1,7 @@
 {
   "name": "stuck-js",
   "version": "2.1.4",
-  "description": "A sticky library handles stack of stickies and supports scrollX without dependencies(like jQuery)",
+  "description": "A sticky library that stacks multiple sticky elements and keeps them aligned on horizontal scroll, with no dependencies",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
